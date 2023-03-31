@@ -1,4 +1,9 @@
-var flightplan={
+import { planet_size, cell_size } from "./draw.js";
+import { intersect, lineCrossesObj } from "./geometry.js";
+import { shown_star } from "./hints.js";
+import { player_star } from "./universe.js";
+
+export const flightplan={
 	steps:[],
 	// visited:[],
 	element:null,
@@ -120,7 +125,7 @@ var flightplan={
 	},
 }
 
-function redrawFlightplan(){
+export function redrawFlightplan(){
 	var html=flightplan.steps.map((step,i)=>{
 		var ret=[];
 		if(step.start){

@@ -1,8 +1,20 @@
+import { Direction } from "./angle.js";
+import { cell_size, portal_pad, portal_size, planet_size, portals_ext } from "./draw.js";
+import { flightplan } from "./flightplan.js";
+import { redraw } from "./index.js";
+import { Planet } from "./planets.js";
+import { Star } from "./stars.js";
+import { mode, player_star } from "./universe.js";
+
+export var shown_star;
+
+export function set_shown_star(x){shown_star=x};
+
 // var grid=[];
 var hintTarget=null;
 var visibleStar;
 
-function setupHints(star,canvas,hintTargetObj){
+export function setupHints(star,canvas,hintTargetObj){
 	visibleStar=star;
 	canvas.onmousemove=hint;
 	hintTarget=hintTargetObj;
@@ -52,7 +64,7 @@ function hintText(obj){
 	return ['Unknown object'];
 }
 
-function objAt(x,y,max_size){
+function objAt(x,y,event){
 	var cell_x=Math.floor(x/cell_size-portal_pad);
 	var cell_y=Math.floor(y/cell_size-portal_pad);
 	// console.log(cell_x,cell_y);
@@ -60,7 +72,7 @@ function objAt(x,y,max_size){
 	   cell_y<0||cell_y>=visibleStar.size){
 		// in portal area
 		var radius=portal_size/cell_size;
-		for(neighbour of visibleStar.neighbours){
+		for(var neighbour of visibleStar.neighbours){
 			var dist=Math.hypot(x/cell_size-neighbour.x-portal_pad,
 			                    y/cell_size-neighbour.y-portal_pad);
 			// console.log(dist,radius);
@@ -87,12 +99,12 @@ function objAt(x,y,max_size){
 }
 
 function hint(event){
-	const obj=objAt(event.offsetX, event.offsetY, event.target.width);
+	const obj=objAt(event.offsetX, event.offsetY, event);
 	hintTarget.innerHTML=obj?hintText(obj).join('<br>'):"Space void";
 }
 
 function click(event){
-	const obj=objAt(event.offsetX, event.offsetY, event.target.width);
+	const obj=objAt(event.offsetX, event.offsetY, event);
 	if(obj instanceof Planet && shown_star == player_star){
 		if(flightplan.steps.findIndex(x=>x.planet==obj) == flightplan.steps.length-1){
 			flightplan.undo();

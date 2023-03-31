@@ -1,3 +1,5 @@
+import { portal_pad } from "./draw.js";
+
 function calc_xy(value, size){
 	var x=Math.cos(value/180*Math.PI);
 	var y=-Math.sin(value/180*Math.PI);
@@ -9,13 +11,13 @@ function calc_xy(value, size){
 	return [x,y];
 }
 
-class Direction {
+export class Direction {
 	target; //something this vector points at, can be null - not used by the class itself
 	x;y; // portal coordinates, calculated during creation
 	#value; //angle, value can be -179..+180.
 	list; //optional, list which this direction is part of
 	// We could limit it to 0..360, but it would complicate calculating "to the left"/"to the right" values
-	constructor(value,owner,target){
+	constructor(value,owner,target?){
 		this.value=value;
 		this.target=target;
 		[this.x, this.y]=calc_xy(value,owner.size);
@@ -56,7 +58,7 @@ class Direction {
 	// right() { return this.list && this.list.right(this) }
 }
 
-class Directions {
+export class Directions {
 	#list=[]; // ordered list of directions
 	owner; // star, to which this list belongs to
 	constructor(owner){

@@ -15,7 +15,7 @@ function dotOnLine(a,b,p){
 }
 
 // does a-b line cross obj p with size?
-function lineCrossesObj(a,b,p,size){
+export function lineCrossesObj(a,b,p,size){
 	const [x,y]=dotOnLine(a,b,p);
 	return x>=Math.min(a.x,b.x)&&
 	       x<=Math.max(a.x,b.x)&&
@@ -37,7 +37,7 @@ function intersect_1 (a, b, c, d) {
 	return Math.max(a,c) <= Math.min(b,d);
 }
 
-function intersect (a, b, c, d) {
+export function intersect (a, b, c, d) {
 	return intersect_1 (a.x, b.x, c.x, d.x)
 	    && intersect_1 (a.y, b.y, c.y, d.y)
 		&& area(a,b,c) * area(a,b,d) <= 0

@@ -1,4 +1,6 @@
-var resources=['water','iron','food','radioactives'];
+import { shuffle, seq } from "./utils";
+
+export const resources=['water','iron','food','radioactives'];
 var planetTypes=(function(){
 	var colors=['blue','yellow','green','red'];
 	var planetNamesTable=[ // table: rows: what planet buys; columns: what planet sells; value: planet name
@@ -22,7 +24,7 @@ var planetTypes=(function(){
 	return ret;
 })();
 
-function Planet(x, y, type_n) {
+export function Planet(x, y, type_n) {
 	var type=planetTypes[type_n];
 	this.x = x;
 	this.y = y;
@@ -42,7 +44,7 @@ function isBad(x,y,size){
 	return x<center+0.6 && x>center-0.6 && y<center+0.6 && y>center-0.6;
 }
 
-function makePlanets(size,grid) {
+export function makePlanets(size,grid) {
 	var thisPlanetTypes=shuffle(seq(planetTypes.length));
 	for(var _n=0;_n<100;_n++){
 		var bad=false;

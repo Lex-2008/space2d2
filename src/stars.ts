@@ -4,6 +4,12 @@
 // 4. copypaste from vim to JS console, assign to var data=[...]
 // 5. use RGBToHSL function from https://css-tricks.com/converting-color-spaces-in-javascript/, modified to return only 'l' as number
 // 6. out=data.map(x=>[x[0],RGBToHSL(x[1],x[2],x[3])])
+
+import { Directions, Direction } from "./angle.js";
+import { portals_ext } from "./draw.js";
+import { makePlanets, Planet, resources } from "./planets.js";
+import { seq, randomFrom, randomInt } from "./utils.js";
+
 // 7. prompt('',JSON.stringify(out.filter(x=>x[1]>40).map(x=>x[0])))
 var starColors=["AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkGray","DarkGrey","DarkKhaki","DarkOrange","DarkOrchid","DarkSalmon","DarkSeaGreen","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue","FireBrick","FloralWhite","Fuchsia","Gainsboro","GhostWhite","Gold","Goldenrod","Gray","GreenYellow","Grey","Honeydew","HotPink","IndianRed","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenrodYellow","LightGray","LightGreen","LightGrey","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","MediumAquamarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MintCream","MistyRose","Moccasin","NavajoWhite","OldLace","Orange","OrangeRed","Orchid","PaleGoldenrod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Red","RosyBrown","RoyalBlue","Salmon","SandyBrown","Seashell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
 
@@ -27,7 +33,7 @@ function countJobs(planets){
 	return jobs;
 }
 
-function Star(load) {
+export function Star(load?) {
 	if(!load){
 		load={
 			c:randomFrom(starColors),
@@ -51,7 +57,7 @@ function Star(load) {
 	}
 	this.neighbours = new Directions(this);
 	if(load.n){
-		for(value of load.n){
+		for(var value of load.n){
 			this.neighbours.add(new Direction(value, this));
 		}
 	}
