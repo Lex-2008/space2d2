@@ -1,20 +1,20 @@
 import { Direction, Directions } from "./angle.js";
 import { cell_size, portal_pad, portal_size, planet_size, portals_ext } from "./draw.js";
 import { flightplan } from "./flightplan.js";
-import { redraw } from "./index.js";
+import { mode, redraw } from "./index.js";
 import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
-import { mode, player_star } from "./universe.js";
+import { player_star } from "./universe.js";
 
 export var shown_star: Star;
 
 export function set_shown_star(x: Star) { shown_star = x };
 
 // var grid=[];
-var hintTarget: HTMLDivElement;
+var hintTarget: HTMLElement;
 var visibleStar: Star;
 
-export function setupHints(star: Star, canvas: HTMLCanvasElement, hintTargetObj: HTMLDivElement) {
+export function setupHints(star: Star, canvas: HTMLCanvasElement, hintTargetObj: HTMLElement) {
 	visibleStar = star;
 	canvas.onmousemove = hint;
 	hintTarget = hintTargetObj;

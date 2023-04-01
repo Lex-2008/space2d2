@@ -34,7 +34,17 @@
 </head>
 
 <body>
-	<div style="display:flex;width:790px">
+	<dialog id="select_mode">
+		<fieldset>
+			<legend>Select game mode</legend>
+			<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex;">
+				<button onclick="location.href='#easy'">Easy</button>
+				<button onclick="location.href='#hard'">Hard</button>
+			</form>
+		</fieldset>
+	</dialog>
+
+	<div id="main" style="display:flex;width:790px">
 		<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
 		<fieldset>
 			<legend id="mapTitle_player">Current system

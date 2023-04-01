@@ -5,21 +5,20 @@ import { setupHints, set_shown_star, shown_star } from "./hints.js";
 import { Star } from "./stars.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, saveUniverse, set_player_star, stats } from "./universe.js";
 
-export var mode = 'hard';
+export function gebi(id: string) {
+    const element = document.getElementById(id);
+    if (!element) throw ReferenceError(`element ${id} not found`);
+    return element;
+}
 
-var c = document.getElementById("myCanvas") as HTMLCanvasElement;
-var ctx = c.getContext("2d") as CanvasRenderingContext2D;
+export var mode: string;
 
-if (mode == 'test') loadUniverse(JSON.parse(default_universe));
-else loadUniverse(JSON.parse(localStorage['space2d2' + mode] || default_universe));
-
-if (!check()) alert('universe error, check console');
-
-set_shown_star(player_star);
+var c: HTMLCanvasElement;
+var ctx: CanvasRenderingContext2D;
 
 export function redraw() {
     draw_star(ctx, shown_star);
-    setupHints(shown_star, c, document.getElementById('hints'));
+    setupHints(shown_star, c, gebi('hints'));
     redrawFlightplan();
     document.getElementById('mapTitle_player').style.display = (shown_star == player_star) ? '' : 'none';
     document.getElementById('mapTitle_neighbour').style.display = (shown_star == player_star) ? 'none' : '';
@@ -39,7 +38,30 @@ export function redraw() {
     // document.getElementById('stats_mrc_show').style.display=stats.mrc>1?'':'none';
 }
 
-redraw();
+window.onhashchange = function () {
+    if (['#test', '#easy', '#hard'].indexOf(location.hash) > -1) {
+        mode = location.hash.slice(1);
+        console.log(mode);
+    } else {
+        history.replaceState(0, '', location.pathname);
+        (gebi('select_mode') as HTMLDialogElement).showModal();
+        return;
+    }
+
+    c = document.getElementById("myCanvas") as HTMLCanvasElement;
+    ctx = c.getContext("2d") as CanvasRenderingContext2D;
+
+    if (mode == 'test') loadUniverse(JSON.parse(default_universe));
+    else loadUniverse(JSON.parse(localStorage['space2d2' + mode] || default_universe));
+
+    if (!check()) alert('universe error, check console');
+
+    set_shown_star(player_star);
+
+    redraw();
+}
+
+window.onhashchange();
 
 export function jump() {
     if (shown_star == player_star) return;
@@ -75,3 +97,7 @@ window.redrawFlightplan = redrawFlightplan;
 window.set_shown_star = set_shown_star;
 window.get_shown_star = () => shown_star;
 window.player_star = player_star;
+
+if (location.hostname == 'localhost') {
+    new EventSource('/esbuild').addEventListener('change', () => location.reload());
+}

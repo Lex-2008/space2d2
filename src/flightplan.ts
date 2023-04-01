@@ -2,6 +2,7 @@ import { Direction } from "./angle.js";
 import { planet_size, cell_size } from "./draw.js";
 import { intersect, lineCrossesObj } from "./geometry.js";
 import { shown_star } from "./hints.js";
+import { mode } from "./index.js";
 import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
 import { player_star } from "./universe.js";
@@ -140,6 +141,7 @@ class Flightplan {
 	};
 	cantTravelTo(planet: Planet) {
 		if (this.steps.findIndex(x => x.planet == planet) >= 0) return 'planet already in flight plan';
+		if (mode == 'easy') return false;
 		if (!this.canPathTo(planet)) return 'crosses existing path';
 		var name = this.pathToCollidesWith(planet);
 		if (name) return 'path crosses ' + name;
@@ -148,6 +150,7 @@ class Flightplan {
 	cantJumpTo(star: Star, direction: Direction) {
 		if (star == player_star) return "you're currently at this star";
 		if (star.visited) return "you've already been here";
+		if (mode == 'easy') return false;
 		if (!this.canPathTo(direction)) return "path to portal crosses existing path";
 		var name = this.pathToCollidesWith(direction);
 		if (name) return 'path crosses ' + name;
