@@ -1,73 +1,103 @@
-<!DOCTYPE html><html><head>
-<title>Space 2d2</title>
-<style>
-	html {color-scheme: light dark;}
-	fieldset {border-color: ButtonBorder;}
-	legend {white-space:nowrap}
-	#myFlightplan div {border:2px groove ButtonBorder;}
-	#myFlightplan div > * {display:block}
-	label:has(input:disabled) {color:gray}
-	/* .stats{display:none} */
-	/* input:checked ~ .stats{display:block} */
-</style>
-</head><body>
-<div style="display:flex;width:790px">
-<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
-<fieldset>
-	<legend id="mapTitle_player">Current system
-		(<a href="javascript:set_shown_star(player_star.neighbours[Symbol.iterator]().next().value.target);redraw();void 0">explore neighbours</a> /
-		<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
-	</legend>
-	<legend id="mapTitle_neighbour">Exploring neighbour
-		<b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b>
-		(<a href="javascript:set_shown_star(player_star.neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright; prev</a> |
-		<a href="javascript:set_shown_star(player_star.neighbours.next(get_shown_star()).target);redraw();void 0">next &circlearrowleft;</a> |
-		<a href="javascript:set_shown_star(player_star);redraw();void 0">return to current</a>)
-	</legend>
-	<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
-	<div id="hints" style="height:5rem"></div>
-</fieldset>
-<fieldset style="width:225px;height:607px;overflow-y: auto;"><legend>Flight plan
-		(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
-	</legend>
-	<div id="myFlightplan"></div>
-	<div id="fp_hint">&mldr;<br>
-		Click on a planet or portal to add it to the flight plan
-		<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
-	</div>
-	<!-- <div id="fp_jobs" style="white&#45;space:nowrap"> -->
-	<!-- 	Jobs: <b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> complete (<b id="fp_jobs_prc"></b>%) -->
-	<!-- </div> -->
-	<div id="fp_jump">
-		<div id="fp_jump_ok">
-			Leave to <b id="fp_jump_ok_star"></b>
-			(it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs)
-			<button onclick="jump()">Execute flight plan and continue to this star</button>
-		</div>
-		<div id="fp_jump_no">
-			Can't fly to this star: <span id="fp_jump_no_reason"></span>
-		</div>
-	</div>
-</fieldset>
-</div>
+<!DOCTYPE html>
+<html>
 
-<dialog id="stats">
-	<div>Stars visited: <b id="stats_s"></b></div>
-	<div>Planets visited: <b id="stats_p"></b></div>
-	<div>Jobs seen: <b id="stats_js"></b></div>
-	<div>Jobs done: <b id="stats_jf"></b></div>
-	<hr>
-	<div>Jobs done per star: <b id="stats_jf_s"></b></div>
-	<div>Jobs done per planet: <b id="stats_jf_p"></b>%</div>
-	<div>Jobs done per seen: <b id="stats_jf_js"></b>%</div>
-	<!-- <div>Max ratio: <b id="stats_mr"></b>% -->
-	<!-- 	<span id="stats_mrc_show">(happened <b id="stats_mrc"></b> times)</span> -->
-	<!-- </div> -->
-	<form method="dialog"><button>OK</button></form>
-</dialog>
+<head>
+	<title>Space 2d2</title>
+	<style>
+		html {
+			color-scheme: light dark;
+		}
 
-<script src="script.js"></script>
+		fieldset {
+			border-color: ButtonBorder;
+		}
+
+		legend {
+			white-space: nowrap
+		}
+
+		#myFlightplan div {
+			border: 2px groove ButtonBorder;
+		}
+
+		#myFlightplan div>* {
+			display: block
+		}
+
+		label:has(input:disabled) {
+			color: gray
+		}
+
+		/* .stats{display:none} */
+		/* input:checked ~ .stats{display:block} */
+	</style>
+</head>
+
+<body>
+	<div style="display:flex;width:790px">
+		<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
+		<fieldset>
+			<legend id="mapTitle_player">Current system
+				(<a
+					href="javascript:set_shown_star(player_star.neighbours[Symbol.iterator]().next().value.target);redraw();void 0">explore
+					neighbours</a> /
+				<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
+			</legend>
+			<legend id="mapTitle_neighbour">Exploring neighbour
+				<b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b>
+				(<a
+					href="javascript:set_shown_star(player_star.neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright;
+					prev</a> |
+				<a
+					href="javascript:set_shown_star(player_star.neighbours.next(get_shown_star()).target);redraw();void 0">next
+					&circlearrowleft;</a> |
+				<a href="javascript:set_shown_star(player_star);redraw();void 0">return to current</a>)
+			</legend>
+			<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
+			<div id="hints" style="height:5rem"></div>
+		</fieldset>
+		<fieldset style="width:225px;height:607px;overflow-y: auto;">
+			<legend>Flight plan
+				(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
+			</legend>
+			<div id="myFlightplan"></div>
+			<div id="fp_hint">&mldr;<br>
+				Click on a planet or portal to add it to the flight plan
+				<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
+			</div>
+			<!-- <div id="fp_jobs" style="white&#45;space:nowrap"> -->
+			<!-- 	Jobs: <b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> complete (<b id="fp_jobs_prc"></b>%) -->
+			<!-- </div> -->
+			<div id="fp_jump">
+				<div id="fp_jump_ok">
+					Leave to <b id="fp_jump_ok_star"></b>
+					(it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs)
+					<button onclick="jump()">Execute flight plan and continue to this star</button>
+				</div>
+				<div id="fp_jump_no">
+					Can't fly to this star: <span id="fp_jump_no_reason"></span>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+
+	<dialog id="stats">
+		<div>Stars visited: <b id="stats_s"></b></div>
+		<div>Planets visited: <b id="stats_p"></b></div>
+		<div>Jobs seen: <b id="stats_js"></b></div>
+		<div>Jobs done: <b id="stats_jf"></b></div>
+		<hr>
+		<div>Jobs done per star: <b id="stats_jf_s"></b></div>
+		<div>Jobs done per planet: <b id="stats_jf_p"></b>%</div>
+		<div>Jobs done per seen: <b id="stats_jf_js"></b>%</div>
+		<!-- <div>Max ratio: <b id="stats_mr"></b>% -->
+		<!-- 	<span id="stats_mrc_show">(happened <b id="stats_mrc"></b> times)</span> -->
+		<!-- </div> -->
+		<form method="dialog"><button>OK</button></form>
+	</dialog>
+
+	<script src="script.js"></script>
 
 </body>
-</html>
 
+</html>
