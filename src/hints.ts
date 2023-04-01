@@ -1,4 +1,4 @@
-import { Direction } from "./angle.js";
+import { Direction, Directions } from "./angle.js";
 import { cell_size, portal_pad, portal_size, planet_size, portals_ext } from "./draw.js";
 import { flightplan } from "./flightplan.js";
 import { redraw } from "./index.js";
@@ -6,15 +6,15 @@ import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
 import { mode, player_star } from "./universe.js";
 
-export var shown_star;
+export var shown_star: Star;
 
-export function set_shown_star(x){shown_star=x};
+export function set_shown_star(x: Star){shown_star=x};
 
 // var grid=[];
-var hintTarget=null;
-var visibleStar;
+var hintTarget: HTMLDivElement;
+var visibleStar: Star;
 
-export function setupHints(star,canvas,hintTargetObj){
+export function setupHints(star: Star,canvas: HTMLCanvasElement,hintTargetObj: HTMLDivElement){
 	visibleStar=star;
 	canvas.onmousemove=hint;
 	hintTarget=hintTargetObj;
@@ -22,7 +22,7 @@ export function setupHints(star,canvas,hintTargetObj){
 	canvas.onclick=click;
 }
 
-function hintText(obj){
+function hintText(obj: Direction | Star | Planet): string[]{
 	if(obj instanceof Direction){
 		if(!obj.target) return ['Portal to unknown'+(mode=='test'?' at'+obj.value:'')];
 		var ret=['Portal to '+hintText(obj.target)+(mode=='test'?' at'+obj.value:'')];
@@ -49,7 +49,7 @@ function hintText(obj){
 		if(obj.sells) ret.push('Sells: '+obj.sells);
 		if(shown_star==player_star){
 			var reason=flightplan.cantTravelTo(obj);
-			if(flightplan.steps.at(-1).planet==obj){
+			if(flightplan.lastStep.planet==obj){
 				ret.push('Click to remove it from the flight plan');
 			} else if(reason){
 				ret.push(`Can't travel there: ${reason}`);
@@ -64,7 +64,7 @@ function hintText(obj){
 	return ['Unknown object'];
 }
 
-function objAt(x,y,event){
+function objAt(x: number,y: number,event: MouseEvent): Star | Planet | Direction | undefined{
 	var cell_x=Math.floor(x/cell_size-portal_pad);
 	var cell_y=Math.floor(y/cell_size-portal_pad);
 	// console.log(cell_x,cell_y);
@@ -82,28 +82,23 @@ function objAt(x,y,event){
 			}
 		}
 	}
-	if(!visibleStar.grid[cell_x] || !visibleStar.grid[cell_x][cell_y]){
-		return null;
-	}
+	if(!visibleStar.grid[cell_x]) return undefined;
 	var obj=visibleStar.grid[cell_x][cell_y];
+	if(!obj) return undefined;
 	// console.log(obj);
-	if(obj instanceof Planet){
-		var radius=planet_size;
-	} else {
-		var radius=cell_size/2;
-	}
+	var radius=planet_size;
 	var dist=Math.hypot(event.offsetX-(obj.x+1*portals_ext+portal_pad)*cell_size, event.offsetY-(obj.y+1*portals_ext+portal_pad)*cell_size);
 	if(dist<radius){
 		return obj;
 	}
 }
 
-function hint(event){
+function hint(event: MouseEvent){
 	const obj=objAt(event.offsetX, event.offsetY, event);
 	hintTarget.innerHTML=obj?hintText(obj).join('<br>'):"Space void";
 }
 
-function click(event){
+function click(event: MouseEvent){
 	const obj=objAt(event.offsetX, event.offsetY, event);
 	if(obj instanceof Planet && shown_star == player_star){
 		if(flightplan.steps.findIndex(x=>x.planet==obj) == flightplan.steps.length-1){

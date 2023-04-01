@@ -1,23 +1,4 @@
 (() => {
-  var __accessCheck = (obj, member, msg) => {
-    if (!member.has(obj))
-      throw TypeError("Cannot " + msg);
-  };
-  var __privateGet = (obj, member, getter) => {
-    __accessCheck(obj, member, "read from private field");
-    return getter ? getter.call(obj) : member.get(obj);
-  };
-  var __privateAdd = (obj, member, value) => {
-    if (member.has(obj))
-      throw TypeError("Cannot add the same private member more than once");
-    member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
-  };
-  var __privateSet = (obj, member, value, setter) => {
-    __accessCheck(obj, member, "write to private field");
-    setter ? setter.call(obj, value) : member.set(obj, value);
-    return value;
-  };
-
   // src/geometry.ts
   function normVector(x, y) {
     const d = Math.hypot(x, y);
@@ -59,13 +40,18 @@
     y = y * scale * size / 2 + size / 2 - portal_pad / 2;
     return [x, y];
   }
-  var _value;
-  var _Direction = class {
+  var Direction = class {
+    target;
+    //something this vector points at, can be null - not used by the class itself
+    x;
+    y;
+    // portal coordinates, calculated during creation
+    #value;
+    //angle, value can be -179..+180.
+    list;
     //optional, list which this direction is part of
     // We could limit it to 0..360, but it would complicate calculating "to the left"/"to the right" values
     constructor(value, owner, target) {
-      // portal coordinates, calculated during creation
-      __privateAdd(this, _value, void 0);
       this.value = value;
       this.target = target;
       [this.x, this.y] = calc_xy(value, owner.size);
@@ -78,15 +64,15 @@
       return value;
     }
     get value() {
-      return __privateGet(this, _value);
+      return this.#value;
     }
     set value(value) {
-      __privateSet(this, _value, _Direction.normalize(value));
+      this.#value = Direction.normalize(value);
     }
     angleTo(value) {
-      if (value instanceof _Direction)
+      if (value instanceof Direction)
         return this.angleTo(value.value);
-      return _Direction.normalize(value - __privateGet(this, _value));
+      return Direction.normalize(value - this.#value);
     }
     positiveAngleTo(value) {
       const angle = this.angleTo(value);
@@ -96,9 +82,7 @@
     }
     // // functions which return value (angle between two vectors, or their sum)
     add(value) {
-      if (value instanceof _Direction)
-        return this.add(value.value);
-      return _Direction.normalize(__privateGet(this, _value) + value);
+      return Direction.normalize(this.#value + value);
     }
     // sub(value){
     // 	if(value instanceof Direction) return this.sub(value.value);
@@ -114,53 +98,53 @@
     // left() { return this.list && this.list.left(this) }
     // right() { return this.list && this.list.right(this) }
   };
-  var Direction = _Direction;
-  _value = new WeakMap();
-  var _list;
   var Directions = class {
+    #list;
+    // ordered list of directions
+    owner;
     // star, to which this list belongs to
     constructor(owner) {
-      __privateAdd(this, _list, []);
+      this.#list = [];
       this.owner = owner;
     }
     *[Symbol.iterator]() {
-      for (var item of __privateGet(this, _list))
+      for (var item of this.#list)
         yield item;
     }
     add(new_item) {
-      let index = __privateGet(this, _list).findIndex((item) => item.value > new_item.value);
+      let index = this.#list.findIndex((item) => item.value > new_item.value);
       if (index < 0)
-        index = __privateGet(this, _list).length;
-      __privateGet(this, _list).splice(index, 0, new_item);
+        index = this.#list.length;
+      this.#list.splice(index, 0, new_item);
       new_item.list = this;
     }
     // returns index of whatever is passed - either Direction, or is value
     indexOf(value) {
       if (value instanceof Direction)
-        return __privateGet(this, _list).indexOf(value);
+        return this.#list.indexOf(value);
       if (typeof value == "number") {
         value = Direction.normalize(value);
-        return __privateGet(this, _list).findIndex((item) => item.value == value);
+        return this.#list.findIndex((item) => item.value == value);
       } else {
-        return __privateGet(this, _list).findIndex((item) => item.target == value);
+        return this.#list.findIndex((item) => item.target == value);
       }
     }
     angleBetween(a, b) {
-      if (!(a instanceof Direction))
-        a = this.directionOf(a);
-      if (!(b instanceof Direction))
-        b = this.directionOf(b);
-      return a.angleTo(b);
+      const aa = a instanceof Direction ? a : this.directionOf(a);
+      const bb = b instanceof Direction ? b : this.directionOf(b);
+      if (aa == null || bb == null)
+        throw new ReferenceError(`either ${a} or ${b} is not part of this list`);
+      return aa.angleTo(bb);
     }
     get count() {
-      return __privateGet(this, _list).length;
+      return this.#list.length;
     }
     // returns Direction object with given target, or null if none found
     directionOf(value) {
       let index = this.indexOf(value);
       if (index < 0)
-        return null;
-      return __privateGet(this, _list)[index];
+        throw ReferenceError("${item} is not part of ${this} directions list");
+      return this.#list[index];
     }
     // insert new item, or set a target of an existing one
     link(value, target) {
@@ -168,7 +152,7 @@
       if (index < 0) {
         this.add(new Direction(value, this.owner, target));
       } else {
-        __privateGet(this, _list)[index].target = target;
+        this.#list[index].target = target;
       }
     }
     // functions to navigate the list
@@ -176,14 +160,14 @@
     next(item) {
       let index = this.indexOf(item);
       if (index < 0)
-        return null;
-      return __privateGet(this, _list)[index + 1] || __privateGet(this, _list)[0];
+        throw ReferenceError("${item} is not part of ${this} directions list");
+      return this.#list[index + 1] || this.#list[0];
     }
     prev(item) {
       let index = this.indexOf(item);
       if (index < 0)
-        return null;
-      return __privateGet(this, _list)[index - 1] || __privateGet(this, _list).at(-1);
+        throw ReferenceError("${item} is not part of ${this} directions list");
+      return this.#list[index - 1] || this.#list.at(-1);
     }
     // aliases
     left(item) {
@@ -193,7 +177,6 @@
       return this.prev(item);
     }
   };
-  _list = new WeakMap();
 
   // src/utils.ts
   function randomInt(a, b) {
@@ -237,25 +220,35 @@
     }
     return ret;
   }();
-  function Planet(x, y, type_n) {
-    var type = planetTypes[type_n];
-    this.x = x;
-    this.y = y;
-    this.type = type_n;
-    this.name = type[0];
-    this.buys = type[1];
-    this.sells = type[2];
-    this.color_in = type[3];
-    this.color_out = type[4];
-    this.save = function() {
+  var Planet = class {
+    x;
+    y;
+    type;
+    name;
+    buys;
+    sells;
+    color_in;
+    color_out;
+    constructor(x, y, type_n) {
+      var type = planetTypes[type_n];
+      this.x = x;
+      this.y = y;
+      this.type = type_n;
+      this.name = type[0];
+      this.buys = type[1];
+      this.sells = type[2];
+      this.color_in = type[3];
+      this.color_out = type[4];
+    }
+    save() {
       return [this.x, this.y, this.type];
-    };
-  }
+    }
+  };
   function isBad(x, y, size) {
     var center = size / 2;
     return x < center + 0.6 && x > center - 0.6 && y < center + 0.6 && y > center - 0.6;
   }
-  function makePlanets(size, grid) {
+  function makePlanets(size) {
     var thisPlanetTypes = shuffle(seq(planetTypes.length));
     for (var _n = 0; _n < 100; _n++) {
       var bad = false;
@@ -265,9 +258,6 @@
       var center = size / 2;
       for (var i = 0; i < size; i++) {
         if (isBad(xx[i] + 0.5, yy[i] + 0.5, size)) {
-          bad = true;
-        }
-        if (grid[xx[i]][yy[i]]) {
           bad = true;
         }
         ret.push([xx[i] + 0.5, yy[i] + 0.5, thisPlanetTypes[i]]);
@@ -292,13 +282,13 @@
     return grid;
   }
   function countJobs(planets) {
-    var data = { null: { buys: 0, sells: 0 } };
+    var data = { "null": { buys: 0, sells: 0 } };
     resources.forEach((x) => {
       data[x] = { buys: 0, sells: 0 };
     });
     planets.forEach((planet) => {
-      data[planet.buys].buys++;
-      data[planet.sells].sells++;
+      data[String(planet.buys)].buys++;
+      data[String(planet.sells)].sells++;
     });
     var jobs = 0;
     resources.forEach((x) => {
@@ -306,41 +296,54 @@
     });
     return jobs;
   }
-  function Star(load) {
-    if (!load) {
-      load = {
-        c: randomFrom(starColors),
-        s: randomInt(5, 9),
-        n: false,
-        p: false,
-        v: false
-      };
-    }
-    this.color = load.c;
-    this.size = load.s;
-    this.visited = load.v;
-    this.x = this.y = this.size / 2;
-    this.bright = false;
-    this.name = this.color;
-    if (this.size % 2 == 0) {
-      this.bright = true;
-      this.name = "bright " + this.name;
-    }
-    this.neighbours = new Directions(this);
-    if (load.n) {
-      for (var value of load.n) {
-        this.neighbours.add(new Direction(value, this));
+  var Star = class {
+    color;
+    size;
+    visited;
+    x;
+    y;
+    bright;
+    name;
+    neighbours;
+    grid;
+    planets;
+    jobs;
+    constructor(load) {
+      if (!load) {
+        load = {
+          c: randomFrom(starColors),
+          s: randomInt(5, 9),
+          n: false,
+          p: false,
+          v: false
+        };
       }
+      this.color = load.c;
+      this.size = load.s;
+      this.visited = load.v;
+      this.x = this.y = this.size / 2;
+      this.bright = false;
+      this.name = this.color;
+      if (this.size % 2 == 0) {
+        this.bright = true;
+        this.name = "bright " + this.name;
+      }
+      this.neighbours = new Directions(this);
+      if (load.n) {
+        for (var value of load.n) {
+          this.neighbours.add(new Direction(value, this));
+        }
+      }
+      this.grid = mkgrid(this, this.size);
+      if (!load.p)
+        load.p = makePlanets(this.size);
+      this.planets = load.p.map((x) => new Planet(...x));
+      for (var planet of this.planets) {
+        this.grid[Math.floor(planet.x) + 1 * portals_ext][Math.floor(planet.y) + 1 * portals_ext] = planet;
+      }
+      this.jobs = countJobs(this.planets);
     }
-    this.grid = mkgrid(this, this.size);
-    if (!load.p)
-      load.p = makePlanets(this.size, this.grid);
-    this.planets = load.p.map((x) => new Planet(...x));
-    for (var planet of this.planets) {
-      this.grid[Math.floor(planet.x) + 1 * portals_ext][Math.floor(planet.y) + 1 * portals_ext] = planet;
-    }
-    this.jobs = countJobs(this.planets);
-    this.link = function(other, direction) {
+    link(other, direction) {
       if (direction instanceof Direction) {
         direction.target = other;
         other.neighbours.link(direction.value + 180, this);
@@ -348,8 +351,8 @@
         this.neighbours.link(direction, other);
         other.neighbours.link(direction + 180, this);
       }
-    };
-    this.save = function() {
+    }
+    save() {
       return {
         c: this.color,
         s: this.size,
@@ -357,8 +360,8 @@
         p: this.planets.map((x) => x.save()),
         v: this.visited
       };
-    };
-  }
+    }
+  };
 
   // src/universe.ts
   var player_star;
@@ -453,7 +456,7 @@
     star.neighbours.left(oldStar).target.neighbours.left(oldStar).target = null;
     star.neighbours.right(oldStar).target.neighbours.right(oldStar).target = null;
   }
-  var stats = {};
+  var stats;
   function saveUniverse() {
     return {
       v: 1,
@@ -545,7 +548,7 @@
   function set_shown_star(x) {
     shown_star = x;
   }
-  var hintTarget = null;
+  var hintTarget;
   var visibleStar;
   function setupHints(star, canvas, hintTargetObj) {
     visibleStar = star;
@@ -589,7 +592,7 @@
         ret.push("Sells: " + obj.sells);
       if (shown_star == player_star) {
         var reason = flightplan.cantTravelTo(obj);
-        if (flightplan.steps.at(-1).planet == obj) {
+        if (flightplan.lastStep.planet == obj) {
           ret.push("Click to remove it from the flight plan");
         } else if (reason) {
           ret.push(`Can't travel there: ${reason}`);
@@ -618,15 +621,12 @@
         }
       }
     }
-    if (!visibleStar.grid[cell_x] || !visibleStar.grid[cell_x][cell_y]) {
-      return null;
-    }
+    if (!visibleStar.grid[cell_x])
+      return void 0;
     var obj = visibleStar.grid[cell_x][cell_y];
-    if (obj instanceof Planet) {
-      var radius = planet_size;
-    } else {
-      var radius = cell_size / 2;
-    }
+    if (!obj)
+      return void 0;
+    var radius = planet_size;
     var dist = Math.hypot(event.offsetX - (obj.x + 1 * portals_ext + portal_pad) * cell_size, event.offsetY - (obj.y + 1 * portals_ext + portal_pad) * cell_size);
     if (dist < radius) {
       return obj;
@@ -658,11 +658,11 @@
   }
 
   // src/flightplan.ts
-  var flightplan = {
-    steps: [],
+  var Flightplan = class {
+    steps;
     // visited:[],
-    element: null,
-    init: function(x, y, cargo, element) {
+    element;
+    init(x, y, cargo, element) {
       this.element = element;
       this.steps = [{
         start: true,
@@ -673,13 +673,14 @@
         sell: false,
         cargo
       }];
-    },
-    add: function(planet) {
-      const oldIndex = flightplan.steps.findIndex((x) => x.planet == planet);
+    }
+    add(planet) {
+      const oldIndex = this.steps.findIndex((x) => x.planet == planet);
       if (oldIndex >= 0)
         return;
-      var cargo = this.steps.at(-1).cargo;
+      var cargo = this.lastStep.cargo;
       this.steps.push({
+        start: false,
         planet,
         x: planet.x,
         y: planet.y,
@@ -688,38 +689,40 @@
         cargo
       });
       this.updateStep(this.steps.length - 1);
-    },
-    undo: function() {
+    }
+    undo() {
       if (this.steps.length <= 1)
         return;
       this.steps.pop();
-    },
-    canSell: function(i) {
-      return this.steps[i].planet.buys && this.steps[i - 1].cargo == this.steps[i].planet.buys;
-    },
-    setSell: function(i, value, dontUpdate) {
+    }
+    canSell(i) {
+      const step = this.steps[i];
+      return !!step.planet.buys && this.steps[i - 1].cargo == step.planet.buys;
+    }
+    setSell(i, value, dontUpdate) {
       if (value && !this.canSell(i))
         return;
       var step = this.steps[i];
       step.sell = value;
       if (!dontUpdate)
         this.updateStep(i, true, true);
-    },
-    canBuy: function(i) {
-      return this.steps[i].planet.sells && (!this.steps[i - 1].cargo || this.steps[i].sell);
-    },
-    setBuy: function(i, value, dontUpdate) {
+    }
+    canBuy(i) {
+      const step = this.steps[i];
+      return !!step.planet.sells && (!this.steps[i - 1].cargo || this.steps[i].sell);
+    }
+    setBuy(i, value, dontUpdate) {
       if (value && !this.canBuy(i))
         return;
-      var step = this.steps[i];
+      const step = this.steps[i];
       step.buy = value;
       if (!dontUpdate)
         this.updateStep(i, true);
-    },
-    updateStep: function(i, changed, noAutoSell) {
+    }
+    updateStep(i, changed, noAutoSell) {
       if (i >= this.steps.length)
         return;
-      var step = this.steps[i];
+      const step = this.steps[i];
       if (noAutoSell) {
         if (step.sell && !this.canSell(i)) {
           step.sell = false;
@@ -735,39 +738,46 @@
         step.buy = false;
         changed = true;
       }
-      var new_cargo = step.buy ? step.planet.sells : step.sell ? null : this.steps[i - 1].cargo;
+      var new_cargo = step.buy ? step.planet.sells : step.sell ? "" : this.steps[i - 1].cargo;
       changed = changed || step.cargo != new_cargo;
       step.cargo = new_cargo;
       if (changed) {
         this.updateStep(i + 1);
       }
-    },
-    countJobs: function() {
-      return this.steps.reduce((a, step) => a += step.sell, 0);
-    },
-    canPathTo: function(obj) {
+    }
+    countJobs() {
+      return this.steps.reduce((a, step) => a += +step.sell, 0);
+    }
+    get lastStep() {
+      const ret = this.steps.at(-1);
+      if (!ret)
+        throw new ReferenceError("flighplan should never be empty");
+      return ret;
+    }
+    canPathTo(obj) {
       for (var i = 1; i < this.steps.length - 1; i++) {
         if (intersect(
           this.steps[i - 1].planet,
           this.steps[i].planet,
-          this.steps.at(-1).planet,
+          this.lastStep.planet,
           obj
         ))
           return false;
       }
       return true;
-    },
-    pathToCollidesWith: function(obj) {
-      if (lineCrossesObj(this.steps.at(-1).planet, obj, player_star, 0.5))
+    }
+    pathToCollidesWith(obj) {
+      if (lineCrossesObj(this.lastStep.planet, obj, player_star, 0.5))
         return "star";
       var size = planet_size / cell_size;
       for (var planet of player_star.planets) {
-        if (planet != obj && planet != this.steps.at(-1).planet && lineCrossesObj(this.steps.at(-1).planet, obj, planet, size))
+        if (planet != obj && planet != this.lastStep.planet && lineCrossesObj(this.lastStep.planet, obj, planet, size))
           return planet.name + " planet";
       }
-    },
-    cantTravelTo: function(planet) {
-      if (flightplan.steps.findIndex((x) => x.planet == planet) >= 0)
+      return false;
+    }
+    cantTravelTo(planet) {
+      if (this.steps.findIndex((x) => x.planet == planet) >= 0)
         return "planet already in flight plan";
       if (!this.canPathTo(planet))
         return "crosses existing path";
@@ -775,8 +785,8 @@
       if (name)
         return "path crosses " + name;
       return false;
-    },
-    cantJumpTo: function(star, direction) {
+    }
+    cantJumpTo(star, direction) {
       if (star == player_star)
         return "you're currently at this star";
       if (star.visited)
@@ -789,12 +799,15 @@
       return false;
     }
   };
+  var flightplan = new Flightplan();
   function redrawFlightplan() {
     var html = flightplan.steps.map((step, i) => {
       var ret = [];
       if (step.start) {
+        step = step;
         ret.push(`Arrived to <b>${player_star.name} star</b>` + (step.cargo ? ` with ${step.cargo}` : ""));
       } else {
+        step = step;
         ret.push(`<div><b>${i}: ${step.planet.name} planet</b>`);
         if (step.planet.buys)
           ret.push(`<label><input type="checkbox" ${step.sell ? "checked" : ""} ${flightplan.canSell(i) ? "" : "disabled"} onchange="flightplan.setSell(${i},this.checked);redrawFlightplan()"> Sell ${step.planet.buys}</label>`);
@@ -811,16 +824,16 @@
     flightplan.element.innerHTML = html;
     document.getElementById("fp_undo").style.display = flightplan.steps.length <= 1 ? "none" : "";
     document.getElementById("fp_hint").style.display = shown_star == player_star ? "" : "none";
-    document.getElementById("fp_jobs_done").innerText = flightplan.countJobs();
+    document.getElementById("fp_jobs_done").innerText = "" + flightplan.countJobs();
     document.getElementById("fp_jobs_total").innerText = player_star.jobs;
     document.getElementById("fp_jump").style.display = shown_star == player_star ? "none" : "";
     if (shown_star != player_star) {
       var reason = flightplan.cantJumpTo(shown_star, player_star.neighbours.directionOf(shown_star));
       document.getElementById("fp_jump_ok").style.display = reason ? "none" : "";
       document.getElementById("fp_jump_ok_star").innerText = shown_star.name + " star";
-      document.getElementById("fp_jump_ok_jobs").innerText = shown_star.jobs;
+      document.getElementById("fp_jump_ok_jobs").innerText = "" + shown_star.jobs;
       document.getElementById("fp_jump_no").style.display = reason ? "" : "none";
-      document.getElementById("fp_jump_no_reason").innerText = reason;
+      document.getElementById("fp_jump_no_reason").innerText = reason || "";
     }
   }
 
@@ -977,7 +990,7 @@
     const ratio = Math.round(flightplan.countJobs() / player_star.jobs * 100);
     console.clear();
     moveToNewStar(shown_star, player_star);
-    var lastCargo = flightplan.steps.at(-1).cargo;
+    var lastCargo = flightplan.lastStep.cargo;
     var direction = shown_star.neighbours.directionOf(player_star);
     flightplan.init(direction.x, direction.y, lastCargo, document.getElementById("myFlightplan"));
     player_star.visited = true;

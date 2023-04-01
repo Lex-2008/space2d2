@@ -3,8 +3,8 @@ import { flightplan } from "./flightplan.js";
 import { Star } from "./stars.js";
 import { randomInt } from "./utils.js";
 
-export var player_star;
-export function set_player_star(x){player_star=x};
+export var player_star: Star;
+export function set_player_star(x: Star){player_star=x};
 
 export var mode='hard';
 
@@ -26,7 +26,7 @@ function measureAngle(x,a,b){
 // move player from one star to the new one
 export function moveToNewStar(star,oldStar){
 	// 1. create new systems
-	var newStars=[];
+	var newStars:Star[]=[];
 	for(var connection of star.neighbours){
 		if(!connection.target){
 			var newStar=new Star();
@@ -41,7 +41,7 @@ export function moveToNewStar(star,oldStar){
 	var connectionToUse=commonNeighbour.neighbours.right(star);
 	commonNeighbour.link(newNeighbour,connectionToUse);
 	//2.5
-	var a=commonNeighbour.neighbours.angleBetween(
+	var a:number=commonNeighbour.neighbours.angleBetween(
 		commonNeighbour.neighbours.right(newNeighbour),
 		newNeighbour);
 	var newValue=randomInt(100-a,Math.min(160-a,80));
@@ -57,7 +57,7 @@ export function moveToNewStar(star,oldStar){
 	var connectionToUse=commonNeighbour.neighbours.left(star);
 	commonNeighbour.link(newNeighbour,connectionToUse);
 	// 2.5
-	var a=commonNeighbour.neighbours.angleBetween(
+	var a:number=commonNeighbour.neighbours.angleBetween(
 		newNeighbour,
 		commonNeighbour.neighbours.left(newNeighbour));
 	// console.log('random number between',100-a,Math.min(160-a,80));
@@ -85,7 +85,7 @@ export function moveToNewStar(star,oldStar){
 		leftStar.link(rightStar, bisect-90);
 		// console.log(`check: ${leftStar.neighbours.directionOf(rightStar).value} and ${rightStar.neighbours.directionOf(leftStar).value}`);
 		// 3.5
-		var a=randomInt(20,80);
+		var a:number=randomInt(20,80);
 		var b=randomInt(100-a,Math.min(160-a,80));
 		if(180-a-b<20||180-a-b>80) console.error('e3',a,b);
 		var newDirection=new Direction(leftStar.neighbours.directionOf(rightStar).add(a), leftStar);
@@ -141,13 +141,20 @@ export function moveToNewStar(star,oldStar){
 	//*/
 }
 
-export var stats={};
+export interface Stats{
+	s:number,
+	p:number,
+	js:number,
+	jf:number
+};
+
+export var stats:Stats;
 
 export function saveUniverse(){
 	return {
 		v:1,
 		s:player_star.save(),
-		n:Array.from(player_star.neighbours).map(n=>n.target.save()),
+		n:Array.from(player_star.neighbours).map(n=>(n.target as Star).save()),
 		f:{x:flightplan.steps[0].x,
 		   y:flightplan.steps[0].y,
 		   c:flightplan.steps[0].cargo},
@@ -158,7 +165,7 @@ export function saveUniverse(){
 export function loadUniverse(data){
 	if(data.v!=1) return;
 	player_star=new Star(data.s);
-	var newStars=[];
+	var newStars:Star[]=[];
 	for(var i=0; i<data.n.length; i++){
 		var newStar=new Star(data.n[i]);
 		newStars.push(newStar);
@@ -166,11 +173,11 @@ export function loadUniverse(data){
 	}
 	// link neighbours to each other
 	for(var leftStar of newStars){
-		var rightStar = player_star.neighbours.right(leftStar).target;
+		var rightStar = player_star.neighbours.right(leftStar).target as Star;
 		leftStar.neighbours.left(player_star).target=rightStar;
 		rightStar.neighbours.right(player_star).target=leftStar;
 	}
-	flightplan.init(data.f.x,data.f.y,data.f.c,document.getElementById('myFlightplan'));
+	flightplan.init(data.f.x,data.f.y,data.f.c,document.getElementById('myFlightplan') as HTMLDivElement);
 	stats=data.st;
 }
 

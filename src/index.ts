@@ -1,12 +1,14 @@
+import { Direction } from "./angle.js";
 import { draw_star } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
+import { Star } from "./stars.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, saveUniverse, set_player_star, stats } from "./universe.js";
 
 export var mode='hard';
 
-var c = document.getElementById("myCanvas");
-var ctx = c.getContext("2d");
+var c = document.getElementById("myCanvas") as HTMLCanvasElement;
+var ctx = c.getContext("2d") as CanvasRenderingContext2D;
 
 if(mode=='test') loadUniverse(JSON.parse(default_universe));
 else loadUniverse(JSON.parse(localStorage['space2d2'+mode] || default_universe));
@@ -55,9 +57,9 @@ const ratio=Math.round(flightplan.countJobs()/player_star.jobs*100);
 // }
 console.clear();
 moveToNewStar(shown_star,player_star);
-var lastCargo=flightplan.steps.at(-1).cargo;
+var lastCargo=flightplan.lastStep.cargo;
 var direction=shown_star.neighbours.directionOf(player_star);
-flightplan.init(direction.x,direction.y,lastCargo,document.getElementById('myFlightplan'));
+flightplan.init(direction.x,direction.y,lastCargo,document.getElementById('myFlightplan') as HTMLDivElement);
 player_star.visited=true;
 set_player_star(shown_star);
 localStorage['space2d2'+mode]=JSON.stringify(saveUniverse());
@@ -71,3 +73,5 @@ window.redraw=redraw;
 window.flightplan=flightplan;
 window.redrawFlightplan=redrawFlightplan;
 window.set_shown_star=set_shown_star;
+window.get_shown_star=()=>shown_star;
+window.player_star=player_star;

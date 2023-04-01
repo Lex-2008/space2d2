@@ -1,4 +1,7 @@
+import { Direction } from "./angle.js";
 import { flightplan } from "./flightplan.js";
+import { Planet } from "./planets.js";
+import { Star } from "./stars.js";
 import { player_star } from "./universe.js";
 
 export var planet_size=0;
@@ -12,7 +15,7 @@ export var portals_ext=0;
 // extra space to reserve for portals
 export const portal_pad=0.5;
 
-function draw_planet(ctx,planet){
+function draw_planet(ctx: CanvasRenderingContext2D ,planet: Planet){
 	const x=(planet.x+1*portals_ext+portal_pad)*cell_size;
 	const y=(planet.y+1*portals_ext+portal_pad)*cell_size;
 	var grd = ctx.createRadialGradient(x-1, y-1, 2, x, y, planet_size);
@@ -24,7 +27,7 @@ function draw_planet(ctx,planet){
 	ctx.fill();
 }
 
-function draw_portal(ctx,neighbour){
+function draw_portal(ctx: CanvasRenderingContext2D,neighbour: Direction){
 	var x=(neighbour.x+portal_pad)*cell_size;
 	var y=(neighbour.y+portal_pad)*cell_size;
 
@@ -46,7 +49,7 @@ function draw_portal(ctx,neighbour){
 	ctx.stroke(); 
 }
 
-function draw_player_here(ctx,x,y){
+function draw_player_here(ctx: CanvasRenderingContext2D,x: number,y: number){
 	ctx.strokeStyle = 'violet';
 	ctx.fillStyle = 'purple';
 	ctx.lineWidth = 3;
@@ -57,12 +60,12 @@ function draw_player_here(ctx,x,y){
 	ctx.fill(); 
 }
 
-function draw_player_there(ctx,x,y,angle){
+function draw_player_there(ctx: CanvasRenderingContext2D,x: number,y: number,angle: number){
 	// x=(x+portal_pad)*cell_size;
 	// y=(y+portal_pad)*cell_size;
 	const r=portal_size*1.73; // sqrt(3)
-	const point_x=function(a){ return r*Math.cos((a+angle)/180*Math.PI)+x; }
-	const point_y=function(a){ return -r*Math.sin((a+angle)/180*Math.PI)+y; }
+	const point_x=function(a: number){ return r*Math.cos((a+angle)/180*Math.PI)+x; }
+	const point_y=function(a: number){ return -r*Math.sin((a+angle)/180*Math.PI)+y; }
 	const side=r*3.46;// 6/sqrt(3)
 	const height=r*3;// side*sqrt(3)/2
 	ctx.strokeStyle = 'purple';
@@ -83,7 +86,7 @@ function draw_player_there(ctx,x,y,angle){
 	ctx.stroke(); 
 }
 
-export function draw_star(ctx,star){
+export function draw_star(ctx: CanvasRenderingContext2D,star: Star){
 	var max_size=ctx.canvas.width;
 	cell_size=max_size/(star.size+2*portals_ext+2*portal_pad);
 	planet_size=cell_size/5;
