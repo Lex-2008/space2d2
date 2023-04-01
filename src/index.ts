@@ -20,22 +20,22 @@ export function redraw() {
     draw_star(ctx, shown_star);
     setupHints(shown_star, c, gebi('hints'));
     redrawFlightplan();
-    document.getElementById('mapTitle_player').style.display = (shown_star == player_star) ? '' : 'none';
-    document.getElementById('mapTitle_neighbour').style.display = (shown_star == player_star) ? 'none' : '';
+    gebi('mapTitle_player').style.display = (shown_star == player_star) ? '' : 'none';
+    gebi('mapTitle_neighbour').style.display = (shown_star == player_star) ? 'none' : '';
     if (shown_star != player_star) {
-        document.getElementById('mapTitle_neighbour_n').innerText = player_star.neighbours.indexOf(shown_star) + 1;
-        document.getElementById('mapTitle_neighbour_total').innerText = player_star.neighbours.count;
+        gebi('mapTitle_neighbour_n').innerText = '' + player_star.neighbours.indexOf(shown_star) + 1;
+        gebi('mapTitle_neighbour_total').innerText = '' + player_star.neighbours.count;
     }
-    document.getElementById('stats_s').innerText = stats.s;
-    document.getElementById('stats_p').innerText = stats.p;
-    document.getElementById('stats_js').innerText = stats.js;
-    document.getElementById('stats_jf').innerText = stats.jf;
-    document.getElementById('stats_jf_s').innerText = Math.round(stats.jf / stats.s * 100) / 100;
-    document.getElementById('stats_jf_p').innerText = Math.round(stats.jf / stats.p * 100);
-    document.getElementById('stats_jf_js').innerText = Math.round(stats.jf / stats.js * 100);
-    // document.getElementById('stats_mr').innerText=stats.mr;
-    // document.getElementById('stats_mrc').innerText=stats.mrc;
-    // document.getElementById('stats_mrc_show').style.display=stats.mrc>1?'':'none';
+    gebi('stats_s').innerText = '' + stats.s;
+    gebi('stats_p').innerText = '' + stats.p;
+    gebi('stats_js').innerText = '' + stats.js;
+    gebi('stats_jf').innerText = '' + stats.jf;
+    gebi('stats_jf_s').innerText = '' + Math.round(stats.jf / stats.s * 100) / 100;
+    gebi('stats_jf_p').innerText = '' + Math.round(stats.jf / stats.p * 100);
+    gebi('stats_jf_js').innerText = '' + Math.round(stats.jf / stats.js * 100);
+    // gebi('stats_mr').innerText=stats.mr;
+    // gebi('stats_mrc').innerText=stats.mrc;
+    // gebi('stats_mrc_show').style.display=stats.mrc>1?'':'none';
 }
 
 window.onhashchange = function () {
@@ -48,7 +48,7 @@ window.onhashchange = function () {
         return;
     }
 
-    c = document.getElementById("myCanvas") as HTMLCanvasElement;
+    c = gebi("myCanvas") as HTMLCanvasElement;
     ctx = c.getContext("2d") as CanvasRenderingContext2D;
 
     if (mode == 'test') loadUniverse(JSON.parse(default_universe));
@@ -81,7 +81,7 @@ export function jump() {
     moveToNewStar(shown_star, player_star);
     var lastCargo = flightplan.lastStep.cargo;
     var direction = shown_star.neighbours.directionOf(player_star);
-    flightplan.init(direction.x, direction.y, lastCargo, document.getElementById('myFlightplan') as HTMLDivElement);
+    flightplan.init(direction.x, direction.y, lastCargo, gebi('myFlightplan') as HTMLDivElement);
     player_star.visited = true;
     set_player_star(shown_star);
     localStorage['space2d2' + mode] = JSON.stringify(saveUniverse());

@@ -1,6 +1,6 @@
 import { Direction } from "./angle.js";
 import { flightplan } from "./flightplan.js";
-import { Star } from "./stars.js";
+import { Star, StarData } from "./stars.js";
 import { randomInt } from "./utils.js";
 
 export var player_star: Star;
@@ -17,12 +17,12 @@ export const default_universe = '{"v":1,"s":{"c":"Yellow","s":4,"n":[-134,-71,-1
 // 	// x1≈0.277504 ∧ y1≈1.114
 // }
 
-function measureAngle(x, a, b) {
+function measureAngle(x: Star, a: Star | Direction, b: Star | Direction) {
 	return x.neighbours.directionOf(a).angleTo(x.neighbours.directionOf(b));
 }
 
 // move player from one star to the new one
-export function moveToNewStar(star, oldStar) {
+export function moveToNewStar(star: Star, oldStar: Star) {
 	// 1. create new systems
 	var newStars: Star[] = [];
 	for (var connection of star.neighbours) {
@@ -35,7 +35,9 @@ export function moveToNewStar(star, oldStar) {
 	// 2. connect systems to existing neighbours
 	// console.log(star.neighbours,oldStar);
 	var commonNeighbour = star.neighbours.left(oldStar).target;
+	if (!commonNeighbour) throw ReferenceError(`${star} and ${oldStar} have no common neighbour on the left`);
 	var newNeighbour = star.neighbours.left(commonNeighbour).target;
+	if (!newNeighbour) throw ReferenceError(`${star} has no neighbour to the left from common neighbour`);
 	var connectionToUse = commonNeighbour.neighbours.right(star);
 	commonNeighbour.link(newNeighbour, connectionToUse);
 	//2.5
@@ -51,7 +53,9 @@ export function moveToNewStar(star, oldStar) {
 	// console.log('connecting',commonNeighbour.name,newNeighbour.name);
 	// 2.
 	var commonNeighbour = star.neighbours.right(oldStar).target;
+	if (!commonNeighbour) throw ReferenceError(`${star} and ${oldStar} have no common neighbour on the right`);
 	var newNeighbour = star.neighbours.right(commonNeighbour).target;
+	if (!newNeighbour) throw ReferenceError(`${star} has no neighbour to the right from common neighbour`);
 	var connectionToUse = commonNeighbour.neighbours.left(star);
 	commonNeighbour.link(newNeighbour, connectionToUse);
 	// 2.5
@@ -71,6 +75,7 @@ export function moveToNewStar(star, oldStar) {
 		var leftDirection = star.neighbours.directionOf(leftStar);
 		var rightDirection = star.neighbours.right(leftDirection);
 		var rightStar = rightDirection.target;
+		if (!rightStar) throw ReferenceError(`${star} has no neighbour to the right from ${leftStar}`);
 		if (newStars.indexOf(rightStar) < 0) continue;
 		// if(star.neighbours.left(rightStar).target!=leftStar) [leftStar, rightStar] = [rightStar, leftStar];
 		if (star.neighbours.left(rightStar).target != leftStar) console.error('e0', leftStar, rightStar);
@@ -131,11 +136,11 @@ export function moveToNewStar(star, oldStar) {
 	var keepNeighbours = [star, star.neighbours.left(oldStar).target, star.neighbours.right(oldStar).target];
 	for (var oldConnection of oldStar.neighbours) {
 		if (keepNeighbours.indexOf(oldConnection.target) < 0) {
-			oldConnection.target = null;
+			oldConnection.target = undefined;
 		}
 	}
-	star.neighbours.left(oldStar).target.neighbours.left(oldStar).target = null;
-	star.neighbours.right(oldStar).target.neighbours.right(oldStar).target = null;
+	star.neighbours.left(oldStar).target.neighbours.left(oldStar).target = undefined;
+	star.neighbours.right(oldStar).target.neighbours.right(oldStar).target = undefined;
 	//*/
 }
 
@@ -162,7 +167,7 @@ export function saveUniverse() {
 	}
 }
 
-export function loadUniverse(data) {
+export function loadUniverse(data: { v: number; s: StarData; n: StarData[]; f: { x: number; y: number; c: string | null; }; st: Stats; }) {
 	if (data.v != 1) return;
 	player_star = new Star(data.s);
 	var newStars: Star[] = [];
@@ -184,6 +189,11 @@ export function loadUniverse(data) {
 export function check() {
 	var ok = true;
 	for (var c of player_star.neighbours) {
+		if (!c.target) {
+			console.error('player_star has no neighbour at', c.value);
+			ok = false;
+			continue;
+		}
 		if (Direction.normalize(c.value + 180) != c.target.neighbours.directionOf(player_star).value) {
 			console.error('player_star and ... dont point to each other', c.target.name,
 				Direction.normalize(c.value + 180), c.target.neighbours.directionOf(player_star).value
@@ -200,6 +210,11 @@ export function check() {
 		}
 		var dirToNextNeighbour = c.target.neighbours.next(player_star);
 		var nextNeighbour = dirToNextNeighbour.target;
+		if (!nextNeighbour) {
+			console.error('player_star has no neighbour after', c.target.name);
+			ok = false;
+			continue;
+		}
 		if (nextNeighbour.neighbours.directionOf(c.target).value != Direction.normalize(dirToNextNeighbour.value + 180)) {
 			console.error('neighbours dont point to each other', c.target.name, nextNeighbour.name,
 				nextNeighbour.neighbours.directionOf(c.target).value, Direction.normalize(dirToNextNeighbour.value + 180));

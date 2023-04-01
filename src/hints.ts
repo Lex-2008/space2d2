@@ -104,11 +104,11 @@ function click(event: MouseEvent) {
 		if (flightplan.steps.findIndex(x => x.planet == obj) == flightplan.steps.length - 1) {
 			flightplan.undo();
 			redraw();
-			flightplan.element.parentNode.scrollTop = 1000;
+			flightplan.element.parentElement.scrollTop = 1000;
 		} else if (!flightplan.cantTravelTo(obj)) {
 			flightplan.add(obj);
 			redraw();
-			flightplan.element.parentNode.scrollTop = 1000;
+			flightplan.element.parentElement.scrollTop = 1000;
 		}
 	}
 	if (obj instanceof Direction && obj.target) {

@@ -2,7 +2,7 @@ import { Direction } from "./angle.js";
 import { planet_size, cell_size } from "./draw.js";
 import { intersect, lineCrossesObj } from "./geometry.js";
 import { shown_star } from "./hints.js";
-import { mode } from "./index.js";
+import { gebi, mode } from "./index.js";
 import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
 import { player_star } from "./universe.js";
@@ -28,7 +28,7 @@ interface flightplanStep {
 class Flightplan {
 	steps: Array<flightplanFirstStep | flightplanStep>;
 	// visited:[],
-	element: HTMLDivElement;
+	element: HTMLElement;
 	init(x: number, y: number, cargo: string | null, element: HTMLDivElement) {
 		this.element = element;
 		this.steps = [{
@@ -178,20 +178,20 @@ export function redrawFlightplan() {
 		return ret.join(' ');
 	}).join(' ');
 	flightplan.element.innerHTML = html;
-	document.getElementById('fp_undo').style.display = flightplan.steps.length <= 1 ? 'none' : '';
-	document.getElementById('fp_hint').style.display = (shown_star == player_star) ? '' : 'none';
+	gebi('fp_undo').style.display = flightplan.steps.length <= 1 ? 'none' : '';
+	gebi('fp_hint').style.display = (shown_star == player_star) ? '' : 'none';
 
-	document.getElementById('fp_jobs_done').innerText = '' + flightplan.countJobs();
-	document.getElementById('fp_jobs_total').innerText = player_star.jobs;
+	gebi('fp_jobs_done').innerText = '' + flightplan.countJobs();
+	gebi('fp_jobs_total').innerText = '' + player_star.jobs;
 	// document.getElementById('fp_jobs_prc').innerText=Math.round(flightplan.countJobs()/player_star.jobs*100);
 
-	document.getElementById('fp_jump').style.display = (shown_star == player_star) ? 'none' : '';
+	gebi('fp_jump').style.display = (shown_star == player_star) ? 'none' : '';
 	if (shown_star != player_star) {
 		var reason = flightplan.cantJumpTo(shown_star, player_star.neighbours.directionOf(shown_star));
-		document.getElementById('fp_jump_ok').style.display = reason ? 'none' : '';
-		document.getElementById('fp_jump_ok_star').innerText = shown_star.name + ' star';
-		document.getElementById('fp_jump_ok_jobs').innerText = '' + shown_star.jobs;
-		document.getElementById('fp_jump_no').style.display = reason ? '' : 'none';
-		document.getElementById('fp_jump_no_reason').innerText = reason || '';
+		gebi('fp_jump_ok').style.display = reason ? 'none' : '';
+		gebi('fp_jump_ok_star').innerText = shown_star.name + ' star';
+		gebi('fp_jump_ok_jobs').innerText = '' + shown_star.jobs;
+		gebi('fp_jump_no').style.display = reason ? '' : 'none';
+		gebi('fp_jump_no_reason').innerText = reason || '';
 	}
 }
