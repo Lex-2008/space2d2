@@ -63,6 +63,7 @@ window.onhashchange = async function () {
         (gebi('select_mode') as HTMLDialogElement).showModal();
         return;
     }
+    document.title += ` - ${mode} mode`;
 
     if (mode == 'test') return start_game(JSON.parse(default_universe));
     if (['easy', 'hard'].indexOf(mode) > -1) return start_game(JSON.parse(localStorage['space2d2' + mode] || default_universe));
