@@ -26,6 +26,7 @@ function hintText(obj: Direction | Star | Planet): string[] {
 	if (obj instanceof Direction) {
 		if (!obj.target) return ['Portal to unknown' + (mode == 'test' ? ' at' + obj.value : '')];
 		var ret = ['Portal to ' + hintText(obj.target) + (mode == 'test' ? ' at' + obj.value : '')];
+		if (mode == 'flyi') return ret;
 		if (shown_star == player_star) {
 			if (Math.abs(obj.x - flightplan.steps[0].x) < 0.001 &&
 				Math.abs(obj.y - flightplan.steps[0].y) < 0.001) {
@@ -47,7 +48,7 @@ function hintText(obj: Direction | Star | Planet): string[] {
 		var ret = [obj.name + ' planet'];
 		if (obj.buys) ret.push('Buys: ' + obj.buys);
 		if (obj.sells) ret.push('Sells: ' + obj.sells);
-		if (shown_star == player_star) {
+		if (shown_star == player_star && mode != 'flyi') {
 			var reason = flightplan.cantTravelTo(obj);
 			if (flightplan.lastStep.planet == obj) {
 				ret.push('Click to remove it from the flight plan');
@@ -99,6 +100,7 @@ function hint(event: MouseEvent) {
 }
 
 function click(event: MouseEvent) {
+	if (mode == 'flyi') return;
 	const obj = objAt(event.offsetX, event.offsetY, event);
 	if (obj instanceof Planet && shown_star == player_star) {
 		if (flightplan.steps.findIndex(x => x.planet == obj) == flightplan.steps.length - 1) {

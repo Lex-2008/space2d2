@@ -28,8 +28,14 @@
 			color: gray
 		}
 
-		/* .stats{display:none} */
-		/* input:checked ~ .stats{display:block} */
+		.row {
+			display: flex
+		}
+
+		.row * {
+			width: 50%;
+			text-align: center;
+		}
 	</style>
 </head>
 
@@ -40,34 +46,117 @@
 			<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex;">
 				<button onclick="location.href='#easy'">Easy</button>
 				<button onclick="location.href='#hard'">Hard</button>
+				<button onclick="location.href='#real'">Real</button>
 			</form>
 		</fieldset>
 	</dialog>
 
-	<div id="main" style="display:flex;width:790px">
+	<dialog id="login">
+		<fieldset style="display: flex;flex-direction: column;gap: 1ex;">
+			<legend>Login</legend>
+			<div style="text-align: center;">
+				This game mode requires login.<br>
+				<a
+					href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
+					Choose another game mode</a>
+				<br>to play anonymousely.
+			</div>
+			<label for="login_email">Email or username:</label>
+			<input type="text" id="login_email">
+			<label for="login_password">Password:</label>
+			<input type="password" id="login_password">
+			<button onclick="login()">Login</button>
+			<div id="login_failure" style="display: none;">
+				<details>
+					<summary style="cursor:pointer;text-align:center">Login failed. Show details.</summary>
+					<pre id="login_details"></pre>
+				</details>
+				<div style="text-align:center">
+					Maybe try using one of<br>
+					these two links below?
+				</div>
+			</div>
+			<div style="text-align: center;">
+				<a
+					href="javascript:document.getElementById('login').close();document.getElementById('register').showModal();void 0">Register</a>
+				| <a
+					href="javascript:alert('If you provided a real email address during registration - send me an email. Otherwise - you know what to do.')">Forgot
+					password</a>
+			</div>
+		</fieldset>
+	</dialog>
+
+	<dialog id="register">
+		<fieldset style="display: flex;flex-direction: column;gap: 1ex;">
+			<legend>Register</legend>
+			<div style="text-align:center;">
+				To register, please provide<br>
+				username or email and password.
+			</div>
+			<label for="register_username">Username (3 to 150 characters):</label>
+			<input type="text" id="register_username">
+			<label for="register_email">Email:</label>
+			<input type="email" id="register_email">
+			<label for="register_password">Password (required, 8 to 72 characters):</label>
+			<input type="password" required id="register_password">
+			<div class="row">
+				<button onclick="register()">Register</button>
+				<a
+					href="javascript:document.getElementById('register').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
+					Cancel</a>
+			</div>
+			<div id="register_failure" style="display: none;">
+				<details>
+					<summary style="cursor:pointer;text-align:center">Registration failed. Show details.</summary>
+					<pre id="register_details"></pre>
+				</details>
+				<div style="text-align:center">
+					Note that you don't need an account<br>
+					<a
+						href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
+						to play another game mode</a>
+				</div>
+			</div>
+		</fieldset>
+	</dialog>
+
+	<dialog id="register_to_login">
+		<fieldset style="text-align: center;">
+			<legend>Registration successful</legend>
+			Now please <a
+				href="javascript:javascript:document.getElementById('register_to_login').close();document.getElementById('login').showModal();">login</a><br>
+			using your new account.
+		</fieldset>
+	</dialog>
+
+	<div id="main" style="display:none;width:790px">
 		<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
 		<fieldset>
+			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system
+				(<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
+			</legend>
 			<legend id="mapTitle_player">Current system
 				(<a
-					href="javascript:set_shown_star(player_star.neighbours[Symbol.iterator]().next().value.target);redraw();void 0">explore
+					href="javascript:set_shown_star(get_player_star().neighbours[Symbol.iterator]().next().value.target);redraw();void 0">explore
 					neighbours</a> /
 				<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
 			</legend>
 			<legend id="mapTitle_neighbour">Exploring neighbour
 				<b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b>
 				(<a
-					href="javascript:set_shown_star(player_star.neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright;
+					href="javascript:set_shown_star(get_player_star().neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright;
 					prev</a> |
 				<a
-					href="javascript:set_shown_star(player_star.neighbours.next(get_shown_star()).target);redraw();void 0">next
+					href="javascript:set_shown_star(get_player_star().neighbours.next(get_shown_star()).target);redraw();void 0">next
 					&circlearrowleft;</a> |
-				<a href="javascript:set_shown_star(player_star);redraw();void 0">return to current</a>)
+				<a href="javascript:set_shown_star(get_player_star());redraw();void 0">return to current</a>)
 			</legend>
 			<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
 			<div id="hints" style="height:5rem"></div>
 		</fieldset>
 		<fieldset style="width:225px;height:607px;overflow-y: auto;">
-			<legend>Flight plan
+			<legend id="fpTitle_flyi">Travelling</legend>
+			<legend id="fpTitle_normal">Flight plan
 				(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
 			</legend>
 			<div id="myFlightplan"></div>
@@ -75,9 +164,6 @@
 				Click on a planet or portal to add it to the flight plan
 				<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
 			</div>
-			<!-- <div id="fp_jobs" style="white&#45;space:nowrap"> -->
-			<!-- 	Jobs: <b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> complete (<b id="fp_jobs_prc"></b>%) -->
-			<!-- </div> -->
 			<div id="fp_jump">
 				<div id="fp_jump_ok">
 					Leave to <b id="fp_jump_ok_star"></b>
@@ -87,6 +173,11 @@
 				<div id="fp_jump_no">
 					Can't fly to this star: <span id="fp_jump_no_reason"></span>
 				</div>
+			</div>
+			<div id="fp_flyi">
+				It takes 10 hours of real time to travel between stars.
+				Time until arrival:
+				<div id="flyi_time" style="font-size: 40pt; font-weight: bold; text-align: center;"></div>
 			</div>
 		</fieldset>
 	</div>
@@ -106,7 +197,7 @@
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
-	<script src="script.js"></script>
+	<script type="module" src="script.js"></script>
 
 </body>
 
