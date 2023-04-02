@@ -37,7 +37,7 @@ export interface StarData {
 	c: string,
 	s: number,
 	n: number[] | false,
-	p: [number, number, PlanetType][] | false,
+	p: [number, number, number][] | false,
 	v: boolean,
 }
 
@@ -83,7 +83,7 @@ export class Star {
 		}
 		this.grid = mkgrid(this, this.size);
 		if (!load.p) load.p = makePlanets(this.size); //from planets.js
-		this.planets = load.p.map((x: any) => new Planet(...x));
+		this.planets = load.p.map((x) => new Planet(...x));
 		for (var planet of this.planets) {
 			this.grid[Math.floor(planet.x) + 1 * portals_ext][Math.floor(planet.y) + 1 * portals_ext] = planet;
 		}
@@ -100,7 +100,7 @@ export class Star {
 		}
 	}
 
-	save() {
+	save(): StarData {
 		return {
 			c: this.color,
 			s: this.size,

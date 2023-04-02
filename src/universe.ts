@@ -153,7 +153,19 @@ export interface Stats {
 
 export var stats: Stats;
 
-export function saveUniverse() {
+export interface SaveData {
+	v: number;
+	s: StarData;
+	n: StarData[];
+	f: {
+		x: number;
+		y: number;
+		c: string | null;
+	};
+	st: Stats;
+}
+
+export function saveUniverse(): SaveData {
 	return {
 		v: 1,
 		s: player_star.save(),
@@ -167,7 +179,7 @@ export function saveUniverse() {
 	}
 }
 
-export function loadUniverse(data: { v: number; s: StarData; n: StarData[]; f: { x: number; y: number; c: string | null; }; st: Stats; }) {
+export function loadUniverse(data: SaveData) {
 	if (data.v != 1) return;
 	player_star = new Star(data.s);
 	var newStars: Star[] = [];

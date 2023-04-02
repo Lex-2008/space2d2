@@ -1,4 +1,4 @@
-import pocketbaseEs from "../pocketbase/pocketbase.es.mjs";
+import { default as PocketBase, RecordAuthResponse } from "../pocketbase/pocketbase.es.mjs";
 import { draw_star } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
@@ -7,6 +7,11 @@ import { check, default_universe, loadUniverse, moveToNewStar, player_star, save
 export function gebi(id: string) {
     const element = document.getElementById(id);
     if (!element) throw ReferenceError(`element ${id} not found`);
+    return element;
+}
+export function gibi(id: string) {
+    const element = gebi(id);
+    if (!(element instanceof HTMLInputElement)) throw ReferenceError(`element ${id} is not input`);
     return element;
 }
 
@@ -66,7 +71,7 @@ window.onhashchange = async function () {
 
     const m = await import('../pocketbase/pocketbase.es.mjs'); //TODO: error
     const PocketBase = m.default;
-    var pb: pocketbaseEs;
+    var pb: PocketBase;
     if (location.hostname == 'localhost') {
         pb = new PocketBase('http://127.0.0.1:8090');
     } else {
@@ -95,31 +100,31 @@ window.onhashchange = async function () {
         () => setup_login_flow(pb));
 }
 
-function setup_login_flow(pb: pocketbaseEs) {
+function setup_login_flow(pb: PocketBase) {
     window.login = function () {
         pb.collection('users').authWithPassword(
-            gebi('login_email').value,
-            gebi('login_password').value,
+            gibi('login_email').value,
+            gibi('login_password').value,
             {}, { expand: 'real(user)' }
         ).then((r) => {
             (gebi('login') as HTMLDialogElement).close();
             start_real_game(r);
         }, (e) => {
             console.log(e);
-            gebi('login_failure').style.display = '';
-            gebi('login_details').innerText = JSON.stringify(e.response, null, 2);
+            gibi('login_failure').style.display = '';
+            gibi('login_details').innerText = JSON.stringify(e.response, null, 2);
         });
         return false;
     };
     window.register = function () {
         pb.collection('users').create({
-            email: gebi('register_email').value,
+            email: gibi('register_email').value,
             emailVisibility: true,
-            password: gebi('register_password').value,
-            passwordConfirm: gebi('register_password').value,
+            password: gibi('register_password').value,
+            passwordConfirm: gibi('register_password').value,
         }).then(async (r) => {
-            gebi('login_email').value = gebi('register_email').value;
-            gebi('login_password').value = gebi('register_password').value;
+            gibi('login_email').value = gibi('register_email').value;
+            gibi('login_password').value = gibi('register_password').value;
             (gebi('register') as HTMLDialogElement).close();
             (gebi('register_to_login') as HTMLDialogElement).showModal();
         }, (e) => {

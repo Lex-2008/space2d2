@@ -45,7 +45,7 @@ export class Planet {
 		this.color_in = type[3];
 		this.color_out = type[4];
 	}
-	save() {
+	save(): [number, number, number] {
 		return [this.x, this.y, this.type];
 	}
 }
@@ -59,7 +59,7 @@ export function makePlanets(size: number) {
 	var thisPlanetTypes = shuffle(seq(planetTypes.length));
 	for (var _n = 0; _n < 100; _n++) {
 		var bad = false;
-		var ret: [number, number, PlanetType][] = [];
+		var ret: [number, number, number][] = [];
 		var xx = shuffle(seq(size));
 		var yy = shuffle(seq(size));
 		// console.log(_n,xx,yy);
