@@ -1,9 +1,7 @@
-import pocketbaseEs, { RecordAuthResponse } from "../js-sdk/dist/pocketbase.es.mjs";
-import { Direction } from "./angle.js";
+import pocketbaseEs from "../pocketbase/pocketbase.es.mjs";
 import { draw_star } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
-import { Star } from "./stars.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, saveUniverse, set_player_star, stats } from "./universe.js";
 
 export function gebi(id: string) {
@@ -18,11 +16,14 @@ var c = gebi("myCanvas") as HTMLCanvasElement;
 var ctx = c.getContext("2d") as CanvasRenderingContext2D;
 
 var real_savegame_id: string;
-const flyi_time = 1000 * 60 * 60 * 10; //10h
-//const flyi_time = 1000 * 60 * 10; //10min
+var flyi_time: number;
 var flyi_finish: number;
 var flyi_interval: number;
-
+if (location.hostname == 'localhost') {
+    flyi_time = 1000 * 60 * 10; //10min
+} else {
+    flyi_time = 1000 * 60 * 60 * 10; //10h
+}
 export function redraw() {
     draw_star(ctx, shown_star);
     setupHints(shown_star, c, gebi('hints'));
@@ -30,7 +31,7 @@ export function redraw() {
     gebi('mapTitle_player').style.display = (shown_star == player_star) ? '' : 'none';
     gebi('mapTitle_neighbour').style.display = (shown_star == player_star) ? 'none' : '';
     if (shown_star != player_star) {
-        gebi('mapTitle_neighbour_n').innerText = '' + player_star.neighbours.indexOf(shown_star) + 1;
+        gebi('mapTitle_neighbour_n').innerText = '' + (player_star.neighbours.indexOf(shown_star) + 1);
         gebi('mapTitle_neighbour_total').innerText = '' + player_star.neighbours.count;
     }
     gebi('stats_s').innerText = '' + stats.s;
@@ -46,6 +47,11 @@ export function redraw() {
 }
 
 window.onhashchange = async function () {
+    document.querySelectorAll('dialog[open]').forEach(x => (x as HTMLDialogElement).close())
+    gebi('main').style.display = 'none';
+    flyi_switch(false);
+    gebi('profile').style.display = 'none';
+
     mode = location.hash.slice(1);
     if (['test', 'easy', 'hard', 'real'].indexOf(mode) == -1) {
         history.replaceState(0, '', location.pathname);
@@ -58,9 +64,15 @@ window.onhashchange = async function () {
 
     // REAL mode
 
-    const m = await import('../js-sdk/dist/pocketbase.es.mjs');
+    const m = await import('../pocketbase/pocketbase.es.mjs'); //TODO: error
     const PocketBase = m.default;
-    const pb = new PocketBase('http://127.0.0.1:8090');
+    var pb: pocketbaseEs;
+    if (location.hostname == 'localhost') {
+        pb = new PocketBase('http://127.0.0.1:8090');
+    } else {
+        pb = new PocketBase('/');
+    }
+    window.pb = pb;
 
     save_game = async function () {
         console.log('real mode save_game');
@@ -97,20 +109,16 @@ function setup_login_flow(pb: pocketbaseEs) {
             gebi('login_failure').style.display = '';
             gebi('login_details').innerText = JSON.stringify(e.response, null, 2);
         });
+        return false;
     };
     window.register = function () {
         pb.collection('users').create({
-            username: gebi('register_username').value,
             email: gebi('register_email').value,
+            emailVisibility: true,
             password: gebi('register_password').value,
             passwordConfirm: gebi('register_password').value,
         }).then(async (r) => {
-            if (gebi('register_username').value) {
-                gebi('login_email').value = gebi('register_username').value;
-            }
-            if (gebi('register_email').value) {
-                gebi('login_email').value = gebi('register_email').value;
-            }
+            gebi('login_email').value = gebi('register_email').value;
             gebi('login_password').value = gebi('register_password').value;
             (gebi('register') as HTMLDialogElement).close();
             (gebi('register_to_login') as HTMLDialogElement).showModal();
@@ -125,6 +133,9 @@ function setup_login_flow(pb: pocketbaseEs) {
 
 function start_real_game(r: RecordAuthResponse) {
     const ex = r.record.expand['real(user)'];
+    gebi('profile').style.display = '';
+    gebi('profile_name').innerText = r.record.email;
+    gebi('profile_id').innerText = r.record.id;
     if (!ex || !ex.data) {
         return start_game(JSON.parse(default_universe));
     }
@@ -188,11 +199,16 @@ export function jump() {
     flightplan.init(direction.x, direction.y, lastCargo, gebi('myFlightplan') as HTMLDivElement);
     player_star.visited = true;
     set_player_star(shown_star);
-    save_game();
-    redraw();
     if (!check()) alert('universe error, check console');
-    if (mode != 'real') return;
+    redraw();
+    if (mode != 'real') {
+        return save_game();
+    }
     // for REAL mode
+    if (stats.s == 1) {
+        return (gebi('real_nosave') as HTMLDialogElement).showModal();
+    }
+    save_game()
     mode = 'flyi';
     flyi_finish = new Date().getTime() + flyi_time;
     flyi_switch(true);

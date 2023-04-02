@@ -1,0 +1,8 @@
+Easy mode: you can fly through stars, planets, and cross your own path.
+
+Hard mode: nothing like this.
+
+In both Easy and Hard modes, game is saved locally in your browser, and travelling between stars is instant.
+
+In Real mode, however, travelling between stars takes 10 hours of real time,
+and your game progress is saved on the server (you need to login / register on the server for that).

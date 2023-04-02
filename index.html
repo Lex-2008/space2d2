@@ -8,6 +8,10 @@
 			color-scheme: light dark;
 		}
 
+		dialog {
+			border-style: ridge;
+		}
+
 		fieldset {
 			border-color: ButtonBorder;
 		}
@@ -41,31 +45,24 @@
 
 <body>
 	<dialog id="select_mode">
-		<fieldset>
-			<legend>Select game mode</legend>
-			<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex;">
-				<button onclick="location.href='#easy'">Easy</button>
-				<button onclick="location.href='#hard'">Hard</button>
-				<button onclick="location.href='#real'">Real</button>
-			</form>
-		</fieldset>
+		<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex;">
+			<div>Select game mode:</div>
+			<button onclick="location.href='#easy'">Easy</button>
+			<button onclick="location.href='#hard'">Hard</button>
+			<button onclick="location.href='#real'">Real</button>
+		</form>
 	</dialog>
 
 	<dialog id="login">
-		<fieldset style="display: flex;flex-direction: column;gap: 1ex;">
-			<legend>Login</legend>
+		<form onsubmit="login()" style="display: flex;flex-direction: column;gap: 1ex;">
 			<div style="text-align: center;">
-				This game mode requires login.<br>
-				<a
-					href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
-					Choose another game mode</a>
-				<br>to play anonymousely.
+				This game mode requires login.
 			</div>
-			<label for="login_email">Email or username:</label>
-			<input type="text" id="login_email">
+			<label for="login_email">Email:</label>
+			<input type="email" id="login_email">
 			<label for="login_password">Password:</label>
 			<input type="password" id="login_password">
-			<button onclick="login()">Login</button>
+			<button>Login</button>
 			<div id="login_failure" style="display: none;">
 				<details>
 					<summary style="cursor:pointer;text-align:center">Login failed. Show details.</summary>
@@ -80,24 +77,26 @@
 				<a
 					href="javascript:document.getElementById('login').close();document.getElementById('register').showModal();void 0">Register</a>
 				| <a
-					href="javascript:alert('If you provided a real email address during registration - send me an email. Otherwise - you know what to do.')">Forgot
+					href="javascript:alert('If you provided a real email address during registration - send me an email. Otherwise - there\'s nothing you can do.')">Forgot
 					password</a>
+				<hr><a
+					href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
+					Other game modes</a><br>
+				don't require login.
 			</div>
-		</fieldset>
+		</form>
 	</dialog>
 
 	<dialog id="register">
-		<fieldset style="display: flex;flex-direction: column;gap: 1ex;">
-			<legend>Register</legend>
+		<div style="display: flex;flex-direction: column;gap: 1ex;">
 			<div style="text-align:center;">
 				To register, please provide<br>
-				username or email and password.
+				email and a password.
 			</div>
-			<label for="register_username">Username (3 to 150 characters):</label>
-			<input type="text" id="register_username">
-			<label for="register_email">Email:</label>
+			<label for="register_email" style="cursor: help; text-decoration: dotted underline;"
+				title="Hint: You don't need to use your real email - you can use something @example.com">Email:</label>
 			<input type="email" id="register_email">
-			<label for="register_password">Password (required, 8 to 72 characters):</label>
+			<label for="register_password">Password (min 8 chars):</label>
 			<input type="password" required id="register_password">
 			<div class="row">
 				<button onclick="register()">Register</button>
@@ -112,21 +111,26 @@
 				</details>
 				<div style="text-align:center">
 					Note that you don't need an account<br>
-					<a
+					to play <a
 						href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
-						to play another game mode</a>
+						another game modes</a>.
 				</div>
 			</div>
-		</fieldset>
+		</div>
 	</dialog>
 
-	<dialog id="register_to_login">
-		<fieldset style="text-align: center;">
-			<legend>Registration successful</legend>
-			Now please <a
-				href="javascript:javascript:document.getElementById('register_to_login').close();document.getElementById('login').showModal();">login</a><br>
-			using your new account.
-		</fieldset>
+	<dialog id="register_to_login" style="text-align: center;">
+		Registration successful<br>
+		Now please <a
+			href="javascript:javascript:document.getElementById('register_to_login').close();document.getElementById('login').showModal();">login</a><br>
+		using your new account.
+	</dialog>
+
+	<dialog id="real_nosave" style="text-align: center; max-width: 300px;">
+		Normally, travelling between stars takes 10 hours of real time.
+		But due to a space-temporal glitch, this time it's free.
+		This won't happen again.
+		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
 	<div id="main" style="display:none;width:790px">
@@ -154,32 +158,51 @@
 			<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
 			<div id="hints" style="height:5rem"></div>
 		</fieldset>
-		<fieldset style="width:225px;height:607px;overflow-y: auto;">
-			<legend id="fpTitle_flyi">Travelling</legend>
-			<legend id="fpTitle_normal">Flight plan
-				(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
-			</legend>
-			<div id="myFlightplan"></div>
-			<div id="fp_hint">&mldr;<br>
-				Click on a planet or portal to add it to the flight plan
-				<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
-			</div>
-			<div id="fp_jump">
-				<div id="fp_jump_ok">
-					Leave to <b id="fp_jump_ok_star"></b>
-					(it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs)
-					<button onclick="jump()">Execute flight plan and continue to this star</button>
+		<div style="display: flex;flex-flow: column;">
+			<fieldset id="profile" style="display:none">
+				<legend>Logged in as (<a
+						href="javascript:document.getElementById('profile').style.display='none';pb.authStore.clear();onhashchange();void 0;">logout</a>)
+				</legend>
+				<details>
+					<summary id="profile_name" style="cursor:pointer;  white-space: pre;width: 225px;overflow: clip;">
+					</summary>
+					<p style="text-align: center;">
+						To change your email or password,
+						to delete your account or request copy of all your data,
+						please send me an email.
+						Provide the following code as a proof of account ownership:
+					</p>
+					<pre style="text-align: center; font-weight: bold;" id="profile_id"></pre>
+					</p>
+				</details>
+			</fieldset>
+			<fieldset style="width:225px;overflow-y: auto; flex-grow: 1;">
+				<legend id="fpTitle_flyi">Travelling</legend>
+				<legend id="fpTitle_normal">Flight plan
+					(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
+				</legend>
+				<div id="myFlightplan"></div>
+				<div id="fp_hint">&mldr;<br>
+					Click on a planet or portal to add it to the flight plan
+					<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
 				</div>
-				<div id="fp_jump_no">
-					Can't fly to this star: <span id="fp_jump_no_reason"></span>
+				<div id="fp_jump">
+					<div id="fp_jump_ok">
+						Leave to <b id="fp_jump_ok_star"></b>
+						(it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs)
+						<button onclick="jump()">Execute flight plan and continue to this star</button>
+					</div>
+					<div id="fp_jump_no">
+						Can't fly to this star: <span id="fp_jump_no_reason"></span>
+					</div>
 				</div>
-			</div>
-			<div id="fp_flyi">
-				It takes 10 hours of real time to travel between stars.
-				Time until arrival:
-				<div id="flyi_time" style="font-size: 40pt; font-weight: bold; text-align: center;"></div>
-			</div>
-		</fieldset>
+				<div id="fp_flyi">
+					It takes 10 hours of real time to travel between stars.
+					Time left until arrival:
+					<div id="flyi_time" style="font-size: 40pt; font-weight: bold; text-align: center;"></div>
+				</div>
+			</fieldset>
+		</div>
 	</div>
 
 	<dialog id="stats">
@@ -197,7 +220,7 @@
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
-	<script type="module" src="script.js"></script>
+	<script src="script.js"></script>
 
 </body>
 
