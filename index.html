@@ -50,7 +50,21 @@
 			<button onclick="location.href='#easy'">Easy</button>
 			<button onclick="location.href='#hard'">Hard</button>
 			<button onclick="location.href='#real'">Real</button>
+			<a href="javascript:document.getElementById('about_modes').showModal();">About game modes</a>
 		</form>
+	</dialog>
+
+	<dialog id="about_modes" style="width: 18em;">
+		<p><b>Easy</b> mode: you can fly through stars,
+			planets, and cross your own path.</p>
+		<p><b>Hard</b> mode: nothing like this.</p>
+		<p>In both <b>Easy</b> and <b>Hard</b> modes, game is
+			saved locally in your browser, and
+			travelling between stars is instant.</p>
+		<p>In <b>Real</b> mode, however, travelling between stars takes 10 hours of real time,
+			and your game progress is saved on the server (you need to login / register on the server for that).
+		</p>
+		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
 	<dialog id="login">
@@ -213,10 +227,11 @@
 		<hr>
 		<div>Jobs done per star: <b id="stats_jf_s"></b></div>
 		<div>Jobs done per planet: <b id="stats_jf_p"></b>%</div>
-		<div>Jobs done per seen: <b id="stats_jf_js"></b>%</div>
+		<div>Jobs done per jobs seen: <b id="stats_jf_js"></b>%</div>
 		<!-- <div>Max ratio: <b id="stats_mr"></b>% -->
 		<!-- 	<span id="stats_mrc_show">(happened <b id="stats_mrc"></b> times)</span> -->
 		<!-- </div> -->
+		<hr>
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
