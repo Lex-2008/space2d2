@@ -2,7 +2,7 @@ import { default as PocketBase, RecordAuthResponse } from "../pocketbase/pocketb
 import { draw_star } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
-import { check, default_universe, loadUniverse, moveToNewStar, player_star, saveUniverse, set_player_star, stats } from "./universe.js";
+import { check, default_universe, loadUniverse, moveToNewStar, player_star, SaveData, saveUniverse, set_player_star, stats } from "./universe.js";
 
 export function gebi(id: string) {
     const element = document.getElementById(id);
@@ -64,6 +64,8 @@ window.onhashchange = async function () {
         return;
     }
     document.title += ` - ${mode} mode`;
+
+    save_game = simple_save_game;
 
     if (mode == 'test') return start_game(JSON.parse(default_universe));
     if (['easy', 'hard'].indexOf(mode) > -1) return start_game(JSON.parse(localStorage['space2d2' + mode] || default_universe));
@@ -149,11 +151,8 @@ function start_real_game(r: RecordAuthResponse) {
     if (flyi_finish <= new Date().getTime()) {
         return start_game(ex.data);
     }
-    mode = 'flyi';
     start_game(ex.data);
     flyi_switch(true);
-    flyi_step();
-    flyi_interval = setInterval(flyi_step, 1000);
 }
 
 function flyi_step() {
@@ -161,7 +160,6 @@ function flyi_step() {
     gebi('flyi_time').innerText = '' + new Date(flyi_remain).toISOString().substring(11, 19);
     if (flyi_remain >= 1000) return;
     // switch off
-    mode = 'real';
     clearInterval(flyi_interval);
     flyi_switch(false);
 }
@@ -174,9 +172,16 @@ function flyi_switch(on: boolean) {
     gebi('myFlightplan').style.display = on ? 'none' : '';
     gebi('fp_hint').style.display = on ? 'none' : '';
     gebi('fp_flyi').style.display = on ? '' : 'none';
+    mode = on ? 'flyi' : 'real';
+    if (on) {
+        gebi('flyi_cargo_with').style.display = flightplan.steps[0].cargo ? '' : 'none';
+        gebi('flyi_cargo').innerText = flightplan.steps[0].cargo || '';
+        flyi_interval = setInterval(flyi_step, 1000);
+        flyi_step();
+    }
 }
 
-function start_game(universe) {
+function start_game(universe: SaveData) {
     gebi('main').style.display = 'flex';
     loadUniverse(universe);
     if (!check())
@@ -185,8 +190,9 @@ function start_game(universe) {
     redraw();
 }
 
-var save_game = function () {
-    console.log('simple mode save_game');
+var save_game: () => void;
+
+var simple_save_game = function () {
     localStorage['space2d2' + mode] = JSON.stringify(saveUniverse());
 };
 
@@ -214,11 +220,8 @@ export function jump() {
         return (gebi('real_nosave') as HTMLDialogElement).showModal();
     }
     save_game()
-    mode = 'flyi';
     flyi_finish = new Date().getTime() + flyi_time;
     flyi_switch(true);
-    flyi_step();
-    flyi_interval = setInterval(flyi_step, 1000);
 }
 
 window.onhashchange();
@@ -231,7 +234,6 @@ window.set_shown_star = set_shown_star;
 window.get_shown_star = () => shown_star;
 window.player_star = player_star;
 window.get_player_star = () => player_star;
-window.save_game = save_game;
 
 
 if (location.hostname == 'localhost') {
