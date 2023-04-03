@@ -68,7 +68,7 @@
 	</dialog>
 
 	<dialog id="login">
-		<form onsubmit="login()" style="display: flex;flex-direction: column;gap: 1ex;">
+		<form onsubmit="login(); return false;" style="display: flex;flex-direction: column;gap: 1ex;">
 			<div style="text-align: center;">
 				This game mode requires login.
 			</div>
@@ -102,7 +102,7 @@
 	</dialog>
 
 	<dialog id="register">
-		<div style="display: flex;flex-direction: column;gap: 1ex;">
+		<form onsubmit="register(); return false;" style="display: flex;flex-direction: column;gap: 1ex;">
 			<div style="text-align:center;">
 				To register, please provide<br>
 				email and a password.
@@ -113,7 +113,7 @@
 			<label for="register_password">Password (min 8 chars):</label>
 			<input type="password" required id="register_password">
 			<div class="row">
-				<button onclick="register()">Register</button>
+				<button>Register</button>
 				<a
 					href="javascript:document.getElementById('register').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
 					Cancel</a>
@@ -130,7 +130,7 @@
 						another game modes</a>.
 				</div>
 			</div>
-		</div>
+			</div>
 	</dialog>
 
 	<dialog id="register_to_login" style="text-align: center;">
@@ -147,7 +147,7 @@
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
 
-	<div id="main" style="display:none;width:790px">
+	<div id="main" style="display:none;width:790px;height: 630px;">
 		<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
 		<fieldset>
 			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system

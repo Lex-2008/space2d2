@@ -115,7 +115,6 @@ function setup_login_flow(pb: PocketBase) {
             gibi('login_failure').style.display = '';
             gibi('login_details').innerText = JSON.stringify(e.response, null, 2);
         });
-        return false;
     };
     window.register = function () {
         pb.collection('users').create({
