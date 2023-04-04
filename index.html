@@ -34,6 +34,10 @@
 			color: gray
 		}
 
+		summary {
+			cursor: pointer;
+		}
+
 		.row {
 			display: flex
 		}
@@ -81,7 +85,7 @@
 			<button>Login</button>
 			<div id="login_failure" style="display: none;">
 				<details>
-					<summary style="cursor:pointer;text-align:center">Login failed. Show details.</summary>
+					<summary style="text-align:center">Login failed. Show details.</summary>
 					<pre id="login_details"></pre>
 				</details>
 				<div style="text-align:center">
@@ -122,7 +126,7 @@
 			</div>
 			<div id="register_failure" style="display: none;">
 				<details>
-					<summary style="cursor:pointer;text-align:center">Registration failed. Show details.</summary>
+					<summary style="text-align:center">Registration failed. Show details.</summary>
 					<pre id="register_details"></pre>
 				</details>
 				<div style="text-align:center">
@@ -180,11 +184,11 @@
 						href="javascript:document.getElementById('profile').style.display='none';pb.authStore.clear();onhashchange();void 0;">logout</a>)
 				</legend>
 				<details>
-					<summary id="profile_name" style="cursor:pointer;  white-space: pre;width: 225px;overflow: clip;">
+					<summary id="profile_name" style="white-space: pre;width: 225px;overflow: clip;">
 					</summary>
 					<p style="text-align: center;">
 						To change your email or password,
-						to delete your account or request copy of all your data,
+						to delete your account or request a copy of all your data,
 						please send me an email.
 						Provide the following code as a proof of account ownership:
 					</p>
@@ -213,13 +217,17 @@
 					</div>
 				</div>
 				<div id="fp_flyi">
-					<div id="flyi_cargo_with">
+					<div id="flyi_cargo_with" style="white-space: nowrap;">
 						Carrying cargo: <span id="flyi_cargo"></span>
 						<hr>
 					</div>
 					It takes 10 hours of real time to travel between stars.
 					Time left until arrival:
-					<div id="flyi_time" style="font-size: 40pt; font-weight: bold; text-align: center;"></div>
+					<div id="flyi_time" style="font-weight: bold; text-align: center;">00:00:00</div>
+					<details id="youtube_details" ontoggle="showhide_youtube(this)">
+						<summary>Watch on youtube</summary>
+						<div id="youtube_player" style="width: 225px; height:135px; overflow: hidden;"></div>
+					</details>
 				</div>
 			</fieldset>
 		</div>

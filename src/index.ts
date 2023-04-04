@@ -4,6 +4,8 @@ import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, SaveData, saveUniverse, set_player_star, stats } from "./universe.js";
 
+import textFit from '../textFit/textFit.js';
+
 export function gebi(id: string) {
     const element = document.getElementById(id);
     if (!element) throw ReferenceError(`element ${id} not found`);
@@ -157,11 +159,8 @@ function start_real_game(r: RecordAuthResponse) {
 
 function flyi_step() {
     const flyi_remain = flyi_finish - new Date().getTime();
-    gebi('flyi_time').innerText = '' + new Date(flyi_remain).toISOString().substring(11, 19);
-    if (flyi_remain >= 1000) return;
-    // switch off
-    clearInterval(flyi_interval);
-    flyi_switch(false);
+    (gebi('flyi_time').firstChild as HTMLSpanElement).innerText = '' + new Date(flyi_remain).toISOString().substring(11, 19);
+    if (flyi_remain <= 1000) flyi_switch(false);
 }
 
 function flyi_switch(on: boolean) {
@@ -174,11 +173,23 @@ function flyi_switch(on: boolean) {
     gebi('fp_flyi').style.display = on ? '' : 'none';
     mode = on ? 'flyi' : 'real';
     if (on) {
+        textFit(gebi('flyi_time'), { detectMultiLine: false, widthOnly: true });
         gebi('flyi_cargo_with').style.display = flightplan.steps[0].cargo ? '' : 'none';
         gebi('flyi_cargo').innerText = flightplan.steps[0].cargo || '';
         flyi_interval = setInterval(flyi_step, 1000);
         flyi_step();
+        window.showhide_youtube(gebi('youtube_details')); // add YT player if dialog was open
+    } else {
+        clearInterval(flyi_interval);
+        gebi('youtube_player').innerText = ''; // remove YT player no matter if dialog was open or not
     }
+}
+
+window.showhide_youtube = function (details: HTMLDetailsElement) {
+    gebi('youtube_player').innerText = '';
+    if (!details.open) return;
+    const flyi_progress = flyi_time - (flyi_finish - new Date().getTime());
+    gebi('youtube_player').innerHTML = `<iframe width="530" height="315" src="https://www.youtube-nocookie.com/embed/fTySVh_47Ak?autoplay=1&start=${Math.round(flyi_progress / 1000)}" style="transform: scale(0.42);transform-origin: 0 0" allowfullscreen></iframe>`;
 }
 
 function start_game(universe: SaveData) {
