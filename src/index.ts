@@ -65,7 +65,7 @@ window.onhashchange = async function () {
         (gebi('select_mode') as HTMLDialogElement).showModal();
         return;
     }
-    document.title += ` - ${mode} mode`;
+    document.title = `space2d2 - ${mode} mode`;
 
     save_game = simple_save_game;
 
@@ -179,18 +179,9 @@ function flyi_switch(on: boolean) {
         gebi('flyi_cargo').innerText = flightplan.steps[0].cargo || '';
         flyi_interval = setInterval(flyi_step, 1000);
         flyi_step();
-        window.showhide_youtube(gebi('youtube_details')); // add YT player if dialog was open
     } else {
         clearInterval(flyi_interval);
-        gebi('youtube_player').innerText = ''; // remove YT player no matter if dialog was open or not
     }
-}
-
-window.showhide_youtube = function (details: HTMLDetailsElement) {
-    gebi('youtube_player').innerText = '';
-    if (!details.open) return;
-    const flyi_progress = flyi_time - (flyi_finish - new Date().getTime());
-    gebi('youtube_player').innerHTML = `<iframe width="530" height="315" src="https://www.youtube-nocookie.com/embed/fTySVh_47Ak?autoplay=1&start=${Math.round(flyi_progress / 1000)}" style="transform: scale(0.42);transform-origin: 0 0" allowfullscreen></iframe>`;
 }
 
 function start_game(universe: SaveData) {
