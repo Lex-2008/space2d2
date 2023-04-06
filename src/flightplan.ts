@@ -1,5 +1,5 @@
 import { Direction } from "./angle.js";
-import { planet_size, cell_size } from "./draw.js";
+import { planet_size, cell_size, portal_pad } from "./draw.js";
 import { intersect, lineCrossesObj } from "./geometry.js";
 import { shown_star } from "./hints.js";
 import { gebi, mode } from "./index.js";
@@ -27,10 +27,12 @@ interface flightplanStep {
 
 class Flightplan {
 	steps: Array<flightplanFirstStep | flightplanStep>;
+	exitPortal: Direction | null;
 	// visited:[],
 	element: HTMLElement;
 	init(x: number, y: number, cargo: string | null, element: HTMLDivElement) {
 		this.element = element;
+		this.exitPortal = null;
 		this.steps = [{
 			start: true,
 			planet: { x: x, y: y },
@@ -156,6 +158,30 @@ class Flightplan {
 		if (name) return 'path crosses ' + name;
 		return false;
 	};
+	toXY(): [number, number][] {
+		var ret: [number, number][] = flightplan.steps.map(step => [step.x, step.y]);
+		if (flightplan.exitPortal) {
+			ret.push([flightplan.exitPortal.x, flightplan.exitPortal.y]);
+		}
+		return ret;
+	}
+	toKeyFrames(): string {
+		var xy = this.toXY();
+		var lengths = xy.map((v: [number, number], i: number, arr) => {
+			if (i == 0) return 0;
+			return Math.hypot(v[0] - arr[i - 1][0], v[1] - arr[i - 1][1]);
+		});
+		var distanceFromStart: number[] = [0];
+		for (var i = 1; i < lengths.length; i++) {
+			distanceFromStart[i] = distanceFromStart[i - 1] + lengths[i];
+		}
+		var totalLength = distanceFromStart.at(-1) || 0;
+		var prc = distanceFromStart.map(v => Math.round(v / totalLength * 100));
+		var ret = prc.map((v, i) => `${prc[i]}% { left:${(xy[i][0] + portal_pad) * cell_size + 2}px; top:${(xy[i][1] + portal_pad) * cell_size + 2}px }`);
+		return ret.join(' ');
+
+
+	}
 }
 
 export var flightplan = new Flightplan();

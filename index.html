@@ -46,7 +46,14 @@
 			width: 50%;
 			text-align: center;
 		}
+
+		@keyframes rotate {
+			100% {
+				transform: rotateZ(360deg);
+			}
+		}
 	</style>
+	<style id="player_travel_css"></style>
 </head>
 
 <body>
@@ -175,7 +182,18 @@
 					&circlearrowleft;</a> |
 				<a href="javascript:set_shown_star(get_player_star());redraw();void 0">return to current</a>)
 			</legend>
-			<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
+			<div style="position: relative">
+				<canvas id="myCanvas" width="500" height="500" style="border:2px groove ButtonBorder;"></canvas>
+				<div id="player_here"
+					style="position: absolute; animation: rotate 1s infinite linear; pointer-events: none;">
+					<div
+						style="background: gold; width: 3px; height: 3px; position: absolute; left: calc(50% - 1.5px); top: 0%;">
+					</div>
+				</div>
+				<div id="player_travel"
+					style="background: gold; width: 3px; height: 3px; position: absolute; animation: player_travel 1s linear; display: none;">
+				</div>
+			</div>
 			<div id="hints" style="height:5rem"></div>
 		</fieldset>
 		<div style="display: flex;flex-flow: column;">

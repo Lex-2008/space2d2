@@ -1,5 +1,6 @@
 import { Direction } from "./angle.js";
 import { flightplan } from "./flightplan.js";
+import { gebi } from "./index.js";
 import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
 import { player_star } from "./universe.js";
@@ -50,14 +51,13 @@ function draw_portal(ctx: CanvasRenderingContext2D, neighbour: Direction) {
 }
 
 function draw_player_here(ctx: CanvasRenderingContext2D, x: number, y: number) {
-	ctx.strokeStyle = 'violet';
-	ctx.fillStyle = 'purple';
-	ctx.lineWidth = 3;
-	ctx.setLineDash([1, 0]);
-	ctx.beginPath();
-	ctx.arc(x, y, portal_size, 0, 7);
-	// ctx.stroke(); 
-	ctx.fill();
+	gebi('player_here').style.display = '';
+	const scale = 2;
+	const size = (portal_size * 2 + 2) * scale;
+	gebi('player_here').style.left = (x - size / 2 + 2) + 'px';
+	gebi('player_here').style.top = (y - size / 2 + 2) + 'px';
+	gebi('player_here').style.width = size + 'px';
+	gebi('player_here').style.height = size + 'px';
 }
 
 function draw_player_there(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
@@ -107,6 +107,7 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 		ctx.fillRect(0, 0, max_size, max_size);
 	}
 	if (star == player_star) {
+		// TODO: use flightplan.toXY here
 		ctx.beginPath();
 		var x0 = (flightplan.steps[0].x + portal_pad) * cell_size;
 		var y0 = (flightplan.steps[0].y + portal_pad) * cell_size;
@@ -116,6 +117,11 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 			var y = (flightplan.steps[i].y + portal_pad) * cell_size;
 			ctx.lineTo(x, y);
 		}
+		if (flightplan.exitPortal) {
+			var x = (flightplan.exitPortal.x + portal_pad) * cell_size;
+			var y = (flightplan.exitPortal.y + portal_pad) * cell_size;
+			ctx.lineTo(x, y);
+		}
 		ctx.strokeStyle = 'purple';
 		ctx.setLineDash([6, 6]);
 		ctx.lineWidth = 3;
@@ -123,6 +129,7 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 
 		draw_player_here(ctx, x0, y0);
 	} else {
+		gebi('player_here').style.display = 'none';
 		// const directionToPlayer=shown_star.neighbours.directionOf(player_star);
 		// draw_player_there(ctx,directionToPlayer.x,directionToPlayer.y,directionToPlayer.value);
 	}

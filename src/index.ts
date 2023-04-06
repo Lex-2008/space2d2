@@ -171,6 +171,7 @@ function flyi_switch(on: boolean) {
     gebi('myFlightplan').style.display = on ? 'none' : '';
     gebi('fp_hint').style.display = on ? 'none' : '';
     gebi('fp_flyi').style.display = on ? '' : 'none';
+    gebi('player_here').style.display = on ? 'none' : '';
     mode = on ? 'flyi' : 'real';
     if (on) {
         textFit(gebi('flyi_time'), { detectMultiLine: false, widthOnly: true });
@@ -207,7 +208,52 @@ var simple_save_game = function () {
     localStorage['space2d2' + mode] = JSON.stringify(saveUniverse());
 };
 
-export function jump() {
+function jump_start() {
+    if (shown_star == player_star) return;
+    if (shown_star.visited) return;
+    stats.s++;
+    stats.p += flightplan.steps.length - 1;
+    stats.jf += flightplan.countJobs();
+    stats.js += player_star.jobs;
+    console.clear();
+    const target_star = shown_star;
+    // draw old player star before moveToNewStar turns some portals disabled
+    set_shown_star(player_star);
+    flightplan.exitPortal = player_star.neighbours.directionOf(target_star);
+    redraw();
+    gebi('player_travel_css').innerHTML = `@keyframes player_travel {${flightplan.toKeyFrames()}}`;
+    gebi('player_here').style.display = 'none';
+    // update game state and maybe save it
+    moveToNewStar(target_star, player_star);
+    var lastCargo = flightplan.lastStep.cargo;
+    var direction = target_star.neighbours.directionOf(player_star);
+    flightplan.init(direction.x, direction.y, lastCargo, gebi('myFlightplan') as HTMLDivElement);
+    player_star.visited = true;
+    set_player_star(target_star);
+    if (!check()) alert('universe error, check console');
+    if (mode != 'real' || stats.s != 1) {
+        save_game();
+        flyi_finish = new Date().getTime() + flyi_time;
+    }
+    // start animation
+    gebi('player_travel').style.display = '';
+    gebi('player_travel').onanimationend = jump_end;
+}
+
+function jump_end() {
+    gebi('player_travel').style.display = 'none';
+    set_shown_star(player_star);
+    redraw();
+    if (mode != 'real') return;
+    // for REAL mode
+    if (stats.s == 1) {
+        return (gebi('real_nosave') as HTMLDialogElement).showModal();
+    }
+    save_game();
+    flyi_switch(true);
+}
+
+function jump() {
     if (shown_star == player_star) return;
     if (shown_star.visited) return;
     stats.s++;
@@ -237,7 +283,7 @@ export function jump() {
 
 window.onhashchange();
 
-window.jump = jump;
+window.jump = jump_start;
 window.redraw = redraw;
 window.flightplan = flightplan;
 window.redrawFlightplan = redrawFlightplan;
