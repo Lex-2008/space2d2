@@ -1,7 +1,7 @@
 import { Direction, Directions } from "./angle.js";
 import { cell_size, portal_pad, portal_size, planet_size, portals_ext } from "./draw.js";
 import { flightplan } from "./flightplan.js";
-import { mode, redraw } from "./index.js";
+import { mode, navigateTo, redraw } from "./index.js";
 import { Planet } from "./planets.js";
 import { Star } from "./stars.js";
 import { player_star } from "./universe.js";
@@ -113,8 +113,7 @@ function click(event: MouseEvent) {
 		}
 	}
 	if (obj instanceof Direction && obj.target) {
-		shown_star = obj.target;
-		redraw();
+		navigateTo(obj);
 		hint(event);
 	}
 	return;

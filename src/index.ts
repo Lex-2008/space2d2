@@ -1,10 +1,12 @@
 import { default as PocketBase, RecordAuthResponse } from "../pocketbase/pocketbase.es.mjs";
-import { draw_star } from "./draw.js";
+import { calc_sizes, cell_size, draw_star, portal_pad, portal_size } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, SaveData, saveUniverse, set_player_star, stats } from "./universe.js";
 
 import textFit from '../textFit/textFit.js';
+import { Direction } from "./angle.js";
+import { Star } from "./stars.js";
 
 export function gebi(id: string) {
     const element = document.getElementById(id);
@@ -37,6 +39,7 @@ export function redraw() {
     redrawFlightplan();
     gebi('mapTitle_player').style.display = (shown_star == player_star) ? '' : 'none';
     gebi('mapTitle_neighbour').style.display = (shown_star == player_star) ? 'none' : '';
+    gebi('player_here').style.display = (shown_star == player_star) ? '' : 'none';
     if (shown_star != player_star) {
         gebi('mapTitle_neighbour_n').innerText = '' + (player_star.neighbours.indexOf(shown_star) + 1);
         gebi('mapTitle_neighbour_total').innerText = '' + player_star.neighbours.count;
@@ -195,6 +198,100 @@ var simple_save_game = function () {
     localStorage['space2d2' + mode] = JSON.stringify(saveUniverse());
 };
 
+var navigate_star: Star;
+
+export function navigateTo(dest: Direction | Star) {
+    //assuming that dest is one of shown_star.neighbours
+    if (dest instanceof Star) {
+        dest = shown_star.neighbours.directionOf(dest);
+    }
+    if (!dest.target) return;
+    navigate_star = dest.target;
+    const reverse = (navigate_star == player_star);
+
+    if (reverse) {
+        dest = player_star.neighbours.directionOf(shown_star);
+        set_shown_star(player_star);
+        redraw();
+    }
+
+    const ring = gebi('navigate_ring') as HTMLCanvasElement;
+    const ring_size = (portal_size * 2 + 4);
+    ring.width = ring_size;
+    ring.height = ring_size;
+    const ring_x = (dest.x + portal_pad) * cell_size - ring_size / 2 + 2;
+    const ring_y = (dest.y + portal_pad) * cell_size - ring_size / 2 + 2;
+    (ring.getContext("2d") as CanvasRenderingContext2D).drawImage(c, -ring_x + 2, -ring_y + 2);
+    const star = gebi('navigate_star') as HTMLCanvasElement;
+    const star_size = (portal_size * 2);
+    const star_x = (dest.x + portal_pad) * cell_size - star_size / 2 + 2;
+    const star_y = (dest.y + portal_pad) * cell_size - star_size / 2 + 2;
+    const star_ctx = star.getContext("2d") as CanvasRenderingContext2D;
+    draw_star(star_ctx, navigate_star);
+    calc_sizes(ctx, shown_star);
+    ring.style.display = '';
+    star.style.display = '';
+    ring.style.transitionDuration = star.style.transitionDuration = '0s';
+    if (!reverse) {
+        ring.style.left = ring_x + 'px';
+        ring.style.top = ring_y + 'px';
+        ring.style.width = ring.style.height = ring_size + 'px';
+        star.style.left = star_x + 'px';
+        star.style.top = star_y + 'px';
+        star.style.width = star.style.height = star_size + 'px';
+        setTimeout(() => {
+            const pad = 150;
+            ring.style.left = ring.style.top = `-${pad}px`;
+            ring.style.width = ring.style.height = `${2 * pad + 500}px`;
+            star.style.left = star.style.top = '2px';
+            star.style.width = star.style.height = '500px';
+            ring.style.transitionTimingFunction = star.style.transitionTimingFunction = 'ease-out';
+            ring.style.transitionDuration = star.style.transitionDuration = '0.5s';
+        }, 0);
+        setTimeout(navigate_in_end, 500);
+    } else {
+        const pad = 150;
+        ring.style.left = ring.style.top = `-${pad}px`;
+        ring.style.width = ring.style.height = `${2 * pad + 500}px`;
+        ring.style.transitionTimingFunction = star.style.transitionTimingFunction = 'ease-out';
+        star.style.left = star.style.top = '2px';
+        star.style.width = star.style.height = '500px';
+        setTimeout(() => {
+            ring.style.left = ring_x + 'px';
+            ring.style.top = ring_y + 'px';
+            ring.style.width = ring.style.height = ring_size + 'px';
+            star.style.left = star_x + 'px';
+            star.style.top = star_y + 'px';
+            star.style.width = star.style.height = star_size + 'px';
+            ring.style.transitionDuration = star.style.transitionDuration = '0.5s';
+        }, 0);
+        setTimeout(navigate_out_end, 500);
+    }
+    // hack to start transition
+    // https://css-tricks.com/restart-css-animation/#aa-update-another-javascript-method-to-restart-a-css-animation
+    ring.offsetWidth;
+    star.offsetWidth;
+};
+
+function navigate_in_end() {
+    const ring = gebi('navigate_ring') as HTMLCanvasElement;
+    const pad = 300;
+    ring.style.transitionDuration = '0.1s';
+    ring.style.left = ring.style.top = `-${pad}px`;
+    ring.style.width = ring.style.height = `${2 * pad + 500}px`;
+    ring.style.transitionTimingFunction = 'linear';
+    const star = gebi('navigate_star') as HTMLCanvasElement;
+    star.style.display = 'none';
+    set_shown_star(navigate_star);
+    redraw();
+};
+
+function navigate_out_end() {
+    const star = gebi('navigate_star') as HTMLCanvasElement;
+    star.style.display = 'none';
+};
+
+
 function jump_start() {
     if (shown_star == player_star) return;
     if (shown_star.visited) return;
@@ -247,8 +344,8 @@ window.flightplan = flightplan;
 window.redrawFlightplan = redrawFlightplan;
 window.set_shown_star = set_shown_star;
 window.get_shown_star = () => shown_star;
-window.player_star = player_star;
 window.get_player_star = () => player_star;
+window.navigateTo = navigateTo;
 
 
 if (location.hostname == 'localhost') {

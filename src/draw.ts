@@ -47,7 +47,6 @@ function draw_portal(ctx: CanvasRenderingContext2D, neighbour: Direction) {
 }
 
 function draw_player_here(ctx: CanvasRenderingContext2D, x: number, y: number) {
-	gebi('player_here').style.display = '';
 	const scale = 2;
 	const size = (portal_size * 2 + 2) * scale;
 	gebi('player_here').style.left = (x - size / 2 + 2) + 'px';
@@ -74,23 +73,30 @@ function draw_player_there(ctx: CanvasRenderingContext2D, x: number, y: number, 
 	ctx.stroke();
 }
 
-export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
+
+export function calc_sizes(ctx: CanvasRenderingContext2D, star: Star) {
 	var max_size = ctx.canvas.width;
 	cell_size = max_size / (star.size + 2 * portals_ext + 2 * portal_pad);
 	planet_size = cell_size / 5;
 	portal_size = portal_pad * cell_size / 5;
+}
+
+export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
+	calc_sizes(ctx, star);
+	var max_size = ctx.canvas.width;
 	var center = max_size / 2;
+	ctx.clearRect(0, 0, max_size, max_size);
 	if (star.bright) {
 		var grd = ctx.createRadialGradient(center, center, 0, center, center, cell_size / 2);
 		grd.addColorStop(0, "white");
 		grd.addColorStop(0.5, star.color);
-		grd.addColorStop(1, "black");
+		grd.addColorStop(1, "transparent");
 		ctx.fillStyle = grd;
 		ctx.fillRect(0, 0, max_size, max_size);
 	} else {
 		var grd = ctx.createRadialGradient(center, center, 10, center, center, cell_size / 2);
 		grd.addColorStop(0, star.color);
-		grd.addColorStop(1, "black");
+		grd.addColorStop(1, "transparent");
 		ctx.fillStyle = grd;
 		ctx.fillRect(0, 0, max_size, max_size);
 	}
@@ -116,8 +122,6 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 		ctx.stroke();
 
 		draw_player_here(ctx, x0, y0);
-	} else {
-		gebi('player_here').style.display = 'none';
 	}
 	for (var planet of star.planets) {
 		draw_planet(ctx, planet);
@@ -126,3 +130,4 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 		draw_portal(ctx, neighbour);
 	}
 }
+
