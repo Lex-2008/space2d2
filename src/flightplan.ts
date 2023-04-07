@@ -28,7 +28,6 @@ interface flightplanStep {
 class Flightplan {
 	steps: Array<flightplanFirstStep | flightplanStep>;
 	exitPortal: Direction | null;
-	// visited:[],
 	element: HTMLElement;
 	init(x: number, y: number, cargo: string | null, element: HTMLDivElement) {
 		this.element = element;
@@ -44,10 +43,7 @@ class Flightplan {
 	};
 	add(planet: Planet) {
 		const oldIndex = this.steps.findIndex(x => x.planet == planet);
-		// if(oldIndex == flightplan.steps.length-1) this.undo();
 		if (oldIndex >= 0) return;
-		// if(this.visited.indexOf(planet)>-1) return;
-		// this.visited.push(planet);
 		var cargo = this.lastStep.cargo;
 		this.steps.push({
 			start: false,
@@ -179,8 +175,6 @@ class Flightplan {
 		var prc = distanceFromStart.map(v => Math.round(v / totalLength * 100));
 		var ret = prc.map((v, i) => `${prc[i]}% { left:${(xy[i][0] + portal_pad) * cell_size + 2}px; top:${(xy[i][1] + portal_pad) * cell_size + 2}px }`);
 		return ret.join(' ');
-
-
 	}
 }
 
@@ -209,7 +203,6 @@ export function redrawFlightplan() {
 
 	gebi('fp_jobs_done').innerText = '' + flightplan.countJobs();
 	gebi('fp_jobs_total').innerText = '' + player_star.jobs;
-	// document.getElementById('fp_jobs_prc').innerText=Math.round(flightplan.countJobs()/player_star.jobs*100);
 
 	gebi('fp_jump').style.display = (shown_star == player_star) ? 'none' : '';
 	if (shown_star != player_star) {

@@ -45,7 +45,7 @@ export function moveToNewStar(star: Star, oldStar: Star) {
 		commonNeighbour.neighbours.right(newNeighbour),
 		newNeighbour);
 	var newValue = randomInt(100 - a, Math.min(160 - a, 80));
-	console.log(`setting new angle to ${newValue} to have triangle ${a} - ${newValue} - ${180 - a - newValue}`);
+	// console.log(`setting new angle to ${newValue} to have triangle ${a} - ${newValue} - ${180 - a - newValue}`);
 	newDirection = new Direction(newNeighbour.neighbours.directionOf(commonNeighbour).add(newValue), newNeighbour);
 	newNeighbour.neighbours.add(newDirection);
 	// console.log(`reused existing connection from ${commonNeighbour.name} to link to ${newNeighbour.name}`);
@@ -64,7 +64,7 @@ export function moveToNewStar(star: Star, oldStar: Star) {
 		commonNeighbour.neighbours.left(newNeighbour));
 	// console.log('random number between',100-a,Math.min(160-a,80));
 	var newValue = randomInt(100 - a, Math.min(160 - a, 80));
-	console.log(`setting new angle to ${newValue} to have triangle ${a} - ${newValue} - ${180 - a - newValue}`);
+	// console.log(`setting new angle to ${newValue} to have triangle ${a} - ${newValue} - ${180 - a - newValue}`);
 	newDirection = new Direction(newNeighbour.neighbours.directionOf(commonNeighbour).add(-newValue), newNeighbour);
 	newNeighbour.neighbours.add(newDirection);
 	// console.log(`reused existing connection from ${commonNeighbour.name} to link to ${newNeighbour.name}`);
@@ -81,9 +81,7 @@ export function moveToNewStar(star: Star, oldStar: Star) {
 		if (star.neighbours.left(rightStar).target != leftStar) console.error('e0', leftStar, rightStar);
 		if (leftDirection.target != leftStar) console.error('e1', leftDirection, leftStar);
 		var bisect = leftDirection.add(Math.round(leftDirection.angleTo(rightDirection) / 2));
-		// var bisect = (leftDirection.value+rightDirection.value)/2;
-		// if(leftDirection.value >90 && rightDirection.value<90) bisect+=180;
-		console.log(`linking ${leftStar.name} and ${rightStar.name}`);
+		// console.log(`linking ${leftStar.name} and ${rightStar.name}`);
 		// console.log(`bisect of ${leftDirection.value} and ${rightDirection.value} is ${bisect} (shold be ${(leftDirection.value+rightDirection.value)/2})`);
 		leftStar.link(rightStar, bisect - 90);
 		// console.log(`check: ${leftStar.neighbours.directionOf(rightStar).value} and ${rightStar.neighbours.directionOf(leftStar).value}`);
@@ -102,34 +100,25 @@ export function moveToNewStar(star: Star, oldStar: Star) {
 		var toDirection = newStar.neighbours.prev(newStar.neighbours.prev(star));
 		var degreesToSplit = fromDirection.positiveAngleTo(toDirection);
 		// if(degreesToSplit<180) console.error('e2',newStar);
-		// var minValue=randomInt(50,80);
-		// var maxValue=degreesToSplit-randomInt(50,80);
 		// console.log(`splitting for ${newStar.name}`, newStar.neighbours);
 		// console.log(`filling between ${fromDirection.target.name} (${fromDirection.value}) and ${toDirection.target.name} (${toDirection.value})`);
 		// console.log(`splitting ${degreesToSplit} from ${minValue} (${fromDirection.add(minValue)}) to ${maxValue} (${fromDirection.add(maxValue)})`);
 		var lastAdded = 0;
 		for (var newValue = randomInt(20, 80); newValue < degreesToSplit - 20; newValue += randomInt(20, 80)) {
-			console.log(`got ${newValue} will be ${fromDirection.add(newValue)}`);
+			// console.log(`got ${newValue} will be ${fromDirection.add(newValue)}`);
 			// without second argument, 'link' adds direction without a target
 			// newStar.neighbours.link(fromDirection.add(newValue));
 			var newDirection = new Direction(fromDirection.add(newValue), newStar);
 			newStar.neighbours.add(newDirection);
 			lastAdded = newValue;
 		}
-		console.log(`loop done with ${(degreesToSplit - lastAdded)} gap`);
+		// console.log(`loop done with ${(degreesToSplit - lastAdded)} gap`);
 		if (degreesToSplit - lastAdded > 80) {
 			newValue = randomInt(lastAdded + 20, degreesToSplit - 20);
-			console.log(`adding ${newValue} (will be ${fromDirection.add(newValue)}) to fill the gap`);
+			// console.log(`adding ${newValue} (will be ${fromDirection.add(newValue)}) to fill the gap`);
 			newDirection = new Direction(fromDirection.add(newValue), newStar);
 			newStar.neighbours.add(newDirection);
 		}
-		// console.log(`also ${newValue} will be ${fromDirection.add(newValue)}`);
-		// fromDirection=new Direction(fromDirection.add(newValue), newStar);
-		// newStar.neighbours.add(fromDirection);
-		// console.log(`adding last ${maxValue} will be ${fromDirection.add(maxValue)}`);
-		// newDirection=new Direction(fromDirection.add(maxValue), newStar);
-		// newStar.neighbours.add(newDirection);
-		// newStar.makePlanets();
 	}
 	//*
 	// 5. clean up

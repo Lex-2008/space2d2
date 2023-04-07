@@ -48,9 +48,6 @@ export function redraw() {
     gebi('stats_jf_s').innerText = '' + Math.round(stats.jf / stats.s * 100) / 100;
     gebi('stats_jf_p').innerText = '' + Math.round(stats.jf / stats.p * 100);
     gebi('stats_jf_js').innerText = '' + Math.round(stats.jf / stats.js * 100);
-    // gebi('stats_mr').innerText=stats.mr;
-    // gebi('stats_mrc').innerText=stats.mrc;
-    // gebi('stats_mrc_show').style.display=stats.mrc>1?'':'none';
 }
 
 window.onhashchange = async function () {
@@ -85,7 +82,6 @@ window.onhashchange = async function () {
     window.pb = pb;
 
     save_game = async function () {
-        console.log('real mode save_game');
         // TODO: error checking
         if (real_savegame_id) {
             pb.collection('real').update(real_savegame_id, {
@@ -206,7 +202,7 @@ function jump_start() {
     stats.p += flightplan.steps.length - 1;
     stats.jf += flightplan.countJobs();
     stats.js += player_star.jobs;
-    console.clear();
+    // console.clear();
     const target_star = shown_star;
     // draw old player star before moveToNewStar turns some portals disabled
     set_shown_star(player_star);
@@ -240,35 +236,6 @@ function jump_end() {
     if (stats.s == 1) {
         return (gebi('real_nosave') as HTMLDialogElement).showModal();
     }
-    save_game();
-    flyi_switch(true);
-}
-
-function jump() {
-    if (shown_star == player_star) return;
-    if (shown_star.visited) return;
-    stats.s++;
-    stats.p += flightplan.steps.length - 1;
-    stats.jf += flightplan.countJobs();
-    stats.js += player_star.jobs;
-    console.clear();
-    moveToNewStar(shown_star, player_star);
-    var lastCargo = flightplan.lastStep.cargo;
-    var direction = shown_star.neighbours.directionOf(player_star);
-    flightplan.init(direction.x, direction.y, lastCargo, gebi('myFlightplan') as HTMLDivElement);
-    player_star.visited = true;
-    set_player_star(shown_star);
-    if (!check()) alert('universe error, check console');
-    redraw();
-    if (mode != 'real') {
-        return save_game();
-    }
-    // for REAL mode
-    if (stats.s == 1) {
-        return (gebi('real_nosave') as HTMLDialogElement).showModal();
-    }
-    save_game()
-    flyi_finish = new Date().getTime() + flyi_time;
     flyi_switch(true);
 }
 

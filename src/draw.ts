@@ -43,10 +43,6 @@ function draw_portal(ctx: CanvasRenderingContext2D, neighbour: Direction) {
 	ctx.setLineDash([dashes_length, dashes_length]);
 	ctx.beginPath();
 	ctx.arc(x, y, portal_size, 0, 7);
-	// if(neighbour.target==player_star){
-	// 	ctx.fillStyle = 'purple';
-	// 	ctx.fill();
-	// }
 	ctx.stroke();
 }
 
@@ -61,13 +57,9 @@ function draw_player_here(ctx: CanvasRenderingContext2D, x: number, y: number) {
 }
 
 function draw_player_there(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
-	// x=(x+portal_pad)*cell_size;
-	// y=(y+portal_pad)*cell_size;
 	const r = portal_size * 1.73; // sqrt(3)
 	const point_x = function (a: number) { return r * Math.cos((a + angle) / 180 * Math.PI) + x; }
 	const point_y = function (a: number) { return -r * Math.sin((a + angle) / 180 * Math.PI) + y; }
-	const side = r * 3.46;// 6/sqrt(3)
-	const height = r * 3;// side*sqrt(3)/2
 	ctx.strokeStyle = 'purple';
 	ctx.lineWidth = 4;
 	ctx.setLineDash([1, 0]);
@@ -79,10 +71,6 @@ function draw_player_there(ctx: CanvasRenderingContext2D, x: number, y: number, 
 	ctx.lineTo(point_x(0), point_y(0));
 	ctx.lineTo(point_x(-t), point_y(-t));
 	ctx.lineTo(point_x(-s), point_y(-s));
-	// ctx.moveTo(point_x(0), point_y(0));
-	// ctx.lineTo(point_x(t), point_y(t));
-	// ctx.lineTo(point_x(-t), point_y(-t));
-	// ctx.lineTo(point_x(0), point_y(0));
 	ctx.stroke();
 }
 
@@ -130,8 +118,6 @@ export function draw_star(ctx: CanvasRenderingContext2D, star: Star) {
 		draw_player_here(ctx, x0, y0);
 	} else {
 		gebi('player_here').style.display = 'none';
-		// const directionToPlayer=shown_star.neighbours.directionOf(player_star);
-		// draw_player_there(ctx,directionToPlayer.x,directionToPlayer.y,directionToPlayer.value);
 	}
 	for (var planet of star.planets) {
 		draw_planet(ctx, planet);

@@ -58,7 +58,7 @@
 
 <body>
 	<dialog id="select_mode">
-		<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex;">
+		<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex; text-align: center;">
 			<div>Select game mode:</div>
 			<button onclick="location.href='#easy'">Easy</button>
 			<button onclick="location.href='#hard'">Hard</button>
@@ -68,14 +68,15 @@
 	</dialog>
 
 	<dialog id="about_modes" style="width: 18em;">
-		<p><b>Easy</b> mode: you can fly through stars,
+		<p style="margin-top: 0;"><b>Easy</b> mode: you can fly through stars,
 			planets, and cross your own path.</p>
 		<p><b>Hard</b> mode: nothing like this.</p>
 		<p>In both <b>Easy</b> and <b>Hard</b> modes, game is
 			saved locally in your browser, and
 			travelling between stars is instant.</p>
-		<p>In <b>Real</b> mode, however, travelling between stars takes 10 hours of real time,
-			and your game progress is saved on the server (you need to login / register on the server for that).
+		<p><b>Real</b> mode is different: travelling between stars takes 10 hours of real time,
+			and your game progress is saved on the server.
+			So you need to register and login to play this mode.
 		</p>
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
@@ -86,9 +87,9 @@
 				This game mode requires login.
 			</div>
 			<label for="login_email">Email:</label>
-			<input type="email" id="login_email">
+			<input type="email" id="login_email" required>
 			<label for="login_password">Password:</label>
-			<input type="password" id="login_password">
+			<input type="password" id="login_password" required>
 			<button>Login</button>
 			<div id="login_failure" style="display: none;">
 				<details>
@@ -104,7 +105,7 @@
 				<a
 					href="javascript:document.getElementById('login').close();document.getElementById('register').showModal();void 0">Register</a>
 				| <a
-					href="javascript:alert('If you provided a real email address during registration - send me an email. Otherwise - there\'s nothing you can do.')">Forgot
+					href="javascript:alert('If you registered with a real email address - send me a message. Otherwise - there\'s nothing you can do.')">Forgot
 					password</a>
 				<hr><a
 					href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
@@ -122,9 +123,9 @@
 			</div>
 			<label for="register_email" style="cursor: help; text-decoration: dotted underline;"
 				title="Hint: You don't need to use your real email - you can use something @example.com">Email:</label>
-			<input type="email" id="register_email">
+			<input type="email" id="register_email" required>
 			<label for="register_password">Password (min 8 chars):</label>
-			<input type="password" required id="register_password">
+			<input type="password" id="register_password" required>
 			<div class="row">
 				<button>Register</button>
 				<a
@@ -161,7 +162,6 @@
 	</dialog>
 
 	<div id="main" style="display:none;width:790px;height: 630px;">
-		<!--  style="display:inline&#45;block; width:500px; height: 600px; box&#45;sizing: border&#45;box;" -->
 		<fieldset>
 			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system
 				(<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
@@ -268,9 +268,6 @@
 		<div>Jobs done per star: <b id="stats_jf_s"></b></div>
 		<div>Jobs done per planet: <b id="stats_jf_p"></b>%</div>
 		<div>Jobs done per jobs seen: <b id="stats_jf_js"></b>%</div>
-		<!-- <div>Max ratio: <b id="stats_mr"></b>% -->
-		<!-- 	<span id="stats_mrc_show">(happened <b id="stats_mrc"></b> times)</span> -->
-		<!-- </div> -->
 		<hr>
 		<form method="dialog"><button>OK</button></form>
 	</dialog>

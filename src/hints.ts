@@ -10,7 +10,6 @@ export var shown_star: Star;
 
 export function set_shown_star(x: Star) { shown_star = x };
 
-// var grid=[];
 var hintTarget: HTMLElement;
 var visibleStar: Star;
 
