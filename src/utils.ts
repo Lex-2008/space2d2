@@ -17,3 +17,7 @@ export function seq(a: number): number[] {
 	return [...Array(a).keys()]
 	//=> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
+
+export function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}

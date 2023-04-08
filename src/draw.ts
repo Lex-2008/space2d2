@@ -28,7 +28,7 @@ function draw_planet(ctx: CanvasRenderingContext2D, planet: Planet) {
 	ctx.fill();
 }
 
-function draw_portal(ctx: CanvasRenderingContext2D, neighbour: Direction) {
+export function draw_portal(ctx: CanvasRenderingContext2D, neighbour: Direction) {
 	var x = (neighbour.x + portal_pad) * cell_size;
 	var y = (neighbour.y + portal_pad) * cell_size;
 

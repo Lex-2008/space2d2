@@ -1,5 +1,5 @@
 import { default as PocketBase, RecordAuthResponse } from "../pocketbase/pocketbase.es.mjs";
-import { calc_sizes, cell_size, draw_star, portal_pad, portal_size } from "./draw.js";
+import { calc_sizes, cell_size, draw_portal, draw_star, portal_pad, portal_size } from "./draw.js";
 import { flightplan, redrawFlightplan } from "./flightplan.js";
 import { setupHints, set_shown_star, shown_star } from "./hints.js";
 import { check, default_universe, loadUniverse, moveToNewStar, player_star, SaveData, saveUniverse, set_player_star, stats } from "./universe.js";
@@ -7,6 +7,7 @@ import { check, default_universe, loadUniverse, moveToNewStar, player_star, Save
 import textFit from '../textFit/textFit.js';
 import { Direction } from "./angle.js";
 import { Star } from "./stars.js";
+import { sleep } from "./utils.js";
 
 export function gebi(id: string) {
     const element = document.getElementById(id);
@@ -200,28 +201,36 @@ var simple_save_game = function () {
 
 var navigate_star: Star;
 
-export function navigateTo(dest: Direction | Star) {
-    //assuming that dest is one of shown_star.neighbours
-    if (dest instanceof Star) {
-        dest = shown_star.neighbours.directionOf(dest);
-    }
-    if (!dest.target) return;
-    navigate_star = dest.target;
-    const reverse = (navigate_star == player_star);
-
+export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
+    //if reverse is not set - dest is one of shown_star.neighbours
+    //if reverse is true - dest is ignored and considered a shown_star
+    // return new Promise((resolve, reject) => {
     if (reverse) {
         dest = player_star.neighbours.directionOf(shown_star);
         set_shown_star(player_star);
         redraw();
+    } else if (dest instanceof Star) {
+        dest = shown_star.neighbours.directionOf(dest);
     }
+    if (!dest.target) return; //reject('no dest.target');
+    navigate_star = dest.target;
 
     const ring = gebi('navigate_ring') as HTMLCanvasElement;
+    // if (ring.style.display != 'none') return;
     const ring_size = (portal_size * 2 + 4);
     ring.width = ring_size;
     ring.height = ring_size;
+    // (ring.getContext("2d") as CanvasRenderingContext2D).drawImage(c, -ring_x + 2, -ring_y + 2);
+    // draw a (fake) portal on fake_canvas and copy it to ring canvas
+    const fake_direction = new Direction(90 + 45, shown_star, new Star());
+    const fake_canvas = document.createElement('canvas') as HTMLCanvasElement;
+    fake_canvas.width = fake_canvas.height = (fake_direction.x + portal_pad) * cell_size * 2;
+    draw_portal(fake_canvas.getContext("2d") as CanvasRenderingContext2D, fake_direction);
+    const fake_x = (fake_direction.x + portal_pad) * cell_size - ring_size / 2 + 2;
+    const fake_y = (fake_direction.y + portal_pad) * cell_size - ring_size / 2 + 2;
+    (ring.getContext("2d") as CanvasRenderingContext2D).drawImage(fake_canvas, -fake_x + 2, -fake_y + 2);
     const ring_x = (dest.x + portal_pad) * cell_size - ring_size / 2 + 2;
     const ring_y = (dest.y + portal_pad) * cell_size - ring_size / 2 + 2;
-    (ring.getContext("2d") as CanvasRenderingContext2D).drawImage(c, -ring_x + 2, -ring_y + 2);
     const star = gebi('navigate_star') as HTMLCanvasElement;
     const star_size = (portal_size * 2);
     const star_x = (dest.x + portal_pad) * cell_size - star_size / 2 + 2;
@@ -239,60 +248,60 @@ export function navigateTo(dest: Direction | Star) {
         star.style.left = star_x + 'px';
         star.style.top = star_y + 'px';
         star.style.width = star.style.height = star_size + 'px';
-        setTimeout(() => {
-            const pad = 150;
-            ring.style.left = ring.style.top = `-${pad}px`;
-            ring.style.width = ring.style.height = `${2 * pad + 500}px`;
-            star.style.left = star.style.top = '2px';
-            star.style.width = star.style.height = '500px';
-            ring.style.transitionTimingFunction = star.style.transitionTimingFunction = 'ease-out';
-            ring.style.transitionDuration = star.style.transitionDuration = '0.5s';
-        }, 0);
-        setTimeout(navigate_in_end, 500);
+        await sleep(10);//start animation
+        // setTimeout(() => {
+        var pad = 150;
+        var ani_time = 300;
+        ring.style.left = ring.style.top = `-${pad}px`;
+        ring.style.width = ring.style.height = `${2 * pad + 500}px`;
+        star.style.left = star.style.top = '2px';
+        star.style.width = star.style.height = '500px';
+        ring.style.transitionTimingFunction = star.style.transitionTimingFunction = 'ease-out';
+        ring.style.transitionDuration = star.style.transitionDuration = ani_time + 'ms';
+        // }, 0);
+        await sleep(ani_time + 10);
+        // setTimeout(() => {
+        // const ring = gebi('navigate_ring') as HTMLCanvasElement;
+        var pad = 300;
+        var ani_time = 50;
+        ring.style.transitionDuration = ani_time + 'ms';
+        ring.style.left = ring.style.top = `-${pad}px`;
+        ring.style.width = ring.style.height = `${2 * pad + 500}px`;
+        ring.style.transitionTimingFunction = 'linear';
+        set_shown_star(navigate_star);
+        redraw();
+        star.style.display = 'none';
+        // }, 500);
+        // setTimeout(resolve, 600);
+        await sleep(ani_time + 10);
+        ring.style.display = 'none';
     } else {
-        const pad = 150;
+        var pad = 150;
+        var ani_time = 400;
         ring.style.left = ring.style.top = `-${pad}px`;
         ring.style.width = ring.style.height = `${2 * pad + 500}px`;
         ring.style.transitionTimingFunction = star.style.transitionTimingFunction = 'ease-out';
         star.style.left = star.style.top = '2px';
         star.style.width = star.style.height = '500px';
-        setTimeout(() => {
-            ring.style.left = ring_x + 'px';
-            ring.style.top = ring_y + 'px';
-            ring.style.width = ring.style.height = ring_size + 'px';
-            star.style.left = star_x + 'px';
-            star.style.top = star_y + 'px';
-            star.style.width = star.style.height = star_size + 'px';
-            ring.style.transitionDuration = star.style.transitionDuration = '0.5s';
-        }, 0);
-        setTimeout(navigate_out_end, 500);
+        await sleep(10);
+        // setTimeout(() => {
+        ring.style.left = ring_x + 'px';
+        ring.style.top = ring_y + 'px';
+        ring.style.width = ring.style.height = ring_size + 'px';
+        star.style.left = star_x + 'px';
+        star.style.top = star_y + 'px';
+        star.style.width = star.style.height = star_size + 'px';
+        ring.style.transitionDuration = star.style.transitionDuration = ani_time + 'ms';
+        // }, 0);
+        // setTimeout(resolve, 500);
+        await sleep(ani_time + 10);
+        star.style.display = 'none';
+        ring.style.display = 'none';
     }
-    // hack to start transition
-    // https://css-tricks.com/restart-css-animation/#aa-update-another-javascript-method-to-restart-a-css-animation
-    ring.offsetWidth;
-    star.offsetWidth;
-};
-
-function navigate_in_end() {
-    const ring = gebi('navigate_ring') as HTMLCanvasElement;
-    const pad = 300;
-    ring.style.transitionDuration = '0.1s';
-    ring.style.left = ring.style.top = `-${pad}px`;
-    ring.style.width = ring.style.height = `${2 * pad + 500}px`;
-    ring.style.transitionTimingFunction = 'linear';
-    const star = gebi('navigate_star') as HTMLCanvasElement;
-    star.style.display = 'none';
-    set_shown_star(navigate_star);
-    redraw();
-};
-
-function navigate_out_end() {
-    const star = gebi('navigate_star') as HTMLCanvasElement;
-    star.style.display = 'none';
 };
 
 
-function jump_start() {
+async function jump() {
     if (shown_star == player_star) return;
     if (shown_star.visited) return;
     stats.s++;
@@ -302,11 +311,10 @@ function jump_start() {
     // console.clear();
     const target_star = shown_star;
     // draw old player star before moveToNewStar turns some portals disabled
-    set_shown_star(player_star);
     flightplan.exitPortal = player_star.neighbours.directionOf(target_star);
-    redraw();
+    await navigateTo(player_star, true);
+    gebi('player_travel').style.display = '';
     gebi('player_travel_css').innerHTML = `@keyframes player_travel {${flightplan.toKeyFrames()}}`;
-    gebi('player_here').style.display = 'none';
     // update game state and maybe save it
     moveToNewStar(target_star, player_star);
     var lastCargo = flightplan.lastStep.cargo;
@@ -320,14 +328,13 @@ function jump_start() {
         flyi_finish = new Date().getTime() + flyi_time;
     }
     // start animation
-    gebi('player_travel').style.display = '';
-    gebi('player_travel').onanimationend = jump_end;
-}
-
-function jump_end() {
+    gebi('player_here').style.display = 'none';
+    await sleep(1310);
     gebi('player_travel').style.display = 'none';
-    set_shown_star(player_star);
-    redraw();
+
+    await navigateTo(player_star);
+    // set_shown_star(player_star);
+    // redraw();
     if (mode != 'real') return;
     // for REAL mode
     if (stats.s == 1) {
@@ -338,7 +345,7 @@ function jump_end() {
 
 window.onhashchange();
 
-window.jump = jump_start;
+window.jump = jump;
 window.redraw = redraw;
 window.flightplan = flightplan;
 window.redrawFlightplan = redrawFlightplan;

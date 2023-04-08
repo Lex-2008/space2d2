@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<title>space2d2</title>
 	<link id="favicon" rel="icon" href="star.png">
@@ -55,7 +54,6 @@
 	</style>
 	<style id="player_travel_css"></style>
 </head>
-
 <body>
 	<dialog id="select_mode">
 		<form method="dialog" style="display: flex;flex-direction: column;gap: 1ex; text-align: center;">
@@ -66,26 +64,16 @@
 			<a href="javascript:document.getElementById('about_modes').showModal();">About game modes</a>
 		</form>
 	</dialog>
-
 	<dialog id="about_modes" style="width: 18em;">
-		<p style="margin-top: 0;"><b>Easy</b> mode: you can fly through stars,
-			planets, and cross your own path.</p>
+		<p style="margin-top: 0;"><b>Easy</b> mode: you can fly through stars, planets, and cross your own path.</p>
 		<p><b>Hard</b> mode: nothing like this.</p>
-		<p>In both <b>Easy</b> and <b>Hard</b> modes, game is
-			saved locally in your browser, and
-			travelling between stars is instant.</p>
-		<p><b>Real</b> mode is different: travelling between stars takes 10 hours of real time,
-			and your game progress is saved on the server.
-			So you need to register and login to play this mode.
-		</p>
+		<p>In both <b>Easy</b> and <b>Hard</b> modes, game is saved locally in your browser, and travelling between stars is instant.</p>
+		<p><b>Real</b> mode is different: travelling between stars takes 10 hours of real time, and your game progress is saved on the server. So you need to register and login to play this mode. </p>
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
-
 	<dialog id="login">
 		<form onsubmit="login(); return false;" style="display: flex;flex-direction: column;gap: 1ex;">
-			<div style="text-align: center;">
-				This game mode requires login.
-			</div>
+			<div style="text-align: center;"> This game mode requires login. </div>
 			<label for="login_email">Email:</label>
 			<input type="email" id="login_email" required>
 			<label for="login_password">Password:</label>
@@ -96,175 +84,85 @@
 					<summary style="text-align:center">Login failed. Show details.</summary>
 					<pre id="login_details"></pre>
 				</details>
-				<div style="text-align:center">
-					Maybe try using one of<br>
-					these two links below?
-				</div>
+				<div style="text-align:center">Maybe try using one of<br>these two links below?</div>
 			</div>
 			<div style="text-align: center;">
-				<a
-					href="javascript:document.getElementById('login').close();document.getElementById('register').showModal();void 0">Register</a>
-				| <a
-					href="javascript:alert('If you registered with a real email address - send me a message. Otherwise - there\'s nothing you can do.')">Forgot
-					password</a>
-				<hr><a
-					href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
-					Other game modes</a><br>
-				don't require login.
+				<a href="javascript:document.getElementById('login').close();document.getElementById('register').showModal();void 0">Register</a> | <a href="javascript:alert('If you registered with a real email address - send me a message. Otherwise - there\'s nothing you can do.')">Forgot password</a>
+				<hr><a href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0"> Other game modes</a><br> don't require login.
 			</div>
 		</form>
 	</dialog>
-
 	<dialog id="register">
 		<form onsubmit="register(); return false;" style="display: flex;flex-direction: column;gap: 1ex;">
-			<div style="text-align:center;">
-				To register, please provide<br>
-				email and a password.
-			</div>
-			<label for="register_email" style="cursor: help; text-decoration: dotted underline;"
-				title="Hint: You don't need to use your real email - you can use something @example.com">Email:</label>
+			<div style="text-align:center;">To register, please provide<br>email and a password.</div>
+			<label for="register_email" style="cursor: help; text-decoration: dotted underline;" title="Hint: You don't need to use your real email - you can use something @example.com">Email:</label>
 			<input type="email" id="register_email" required>
 			<label for="register_password">Password (min 8 chars):</label>
 			<input type="password" id="register_password" required>
 			<div class="row">
 				<button>Register</button>
-				<a
-					href="javascript:document.getElementById('register').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
-					Cancel</a>
+				<a href="javascript:document.getElementById('register').close();history.replaceState(0, '', location.pathname);onhashchange();void 0"> Cancel</a>
 			</div>
 			<div id="register_failure" style="display: none;">
 				<details>
 					<summary style="text-align:center">Registration failed. Show details.</summary>
 					<pre id="register_details"></pre>
 				</details>
-				<div style="text-align:center">
-					Note that you don't need an account<br>
-					to play <a
-						href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0">
-						another game modes</a>.
-				</div>
+				<div style="text-align:center">Note that you don't need an account<br>to play <a href="javascript:javascript:document.getElementById('login').close();history.replaceState(0, '', location.pathname);onhashchange();void 0"> another game modes</a>.</div>
 			</div>
 			</div>
 	</dialog>
-
-	<dialog id="register_to_login" style="text-align: center;">
-		Registration successful<br>
-		Now please <a
-			href="javascript:javascript:document.getElementById('register_to_login').close();document.getElementById('login').showModal();">login</a><br>
-		using your new account.
+	<dialog id="register_to_login" style="text-align: center;">Registration successful<br>Now please <a href="javascript:javascript:document.getElementById('register_to_login').close();document.getElementById('login').showModal();">login</a><br> using your new account.</dialog>
+	<dialog id="real_nosave" style="text-align: center; max-width: 300px;">Normally, travelling between stars takes 10 hours of real time. But due to a space-temporal glitch, this time it's free. This won't happen again. <form method="dialog"><button>OK</button></form>
 	</dialog>
-
-	<dialog id="real_nosave" style="text-align: center; max-width: 300px;">
-		Normally, travelling between stars takes 10 hours of real time.
-		But due to a space-temporal glitch, this time it's free.
-		This won't happen again.
-		<form method="dialog"><button>OK</button></form>
-	</dialog>
-
 	<div id="main" style="display:none;width:790px;height: 630px;">
 		<fieldset>
-			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system
-				(<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
-			</legend>
-			<legend id="mapTitle_player">Current system
-				(<a href="javascript:navigateTo(get_player_star().neighbours[Symbol.iterator]().next().value);void 0">explore
-					neighbours</a> /
-				<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)
-			</legend>
-			<legend id="mapTitle_neighbour">Exploring neighbour
-				<b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b>
-				(<a
-					href="javascript:navigateTo(get_player_star().neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright;
-					prev</a> |
-				<a
-					href="javascript:navigateTo(get_player_star().neighbours.next(get_shown_star()).target);redraw();void 0">next
-					&circlearrowleft;</a> |
-				<a href="javascript:navigateTo(get_player_star());void 0">return to
-					current</a>)
-			</legend>
+			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system (<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)</legend>
+			<legend id="mapTitle_player">Current system (<a href="javascript:navigateTo(get_player_star().neighbours[Symbol.iterator]().next().value);void 0">explore neighbours</a> / <a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)</legend>
+			<legend id="mapTitle_neighbour">Exploring neighbour <b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b> (<a href="javascript:navigateTo(get_player_star().neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright; prev</a> | <a href="javascript:navigateTo(get_player_star().neighbours.next(get_shown_star()).target);redraw();void 0">next &circlearrowleft;</a> | <a href="javascript:navigateTo(get_player_star(), true);void 0">return to current</a>)</legend>
 			<div style="position: relative; overflow: hidden; width: 504px;height: 504px;">
-				<canvas id="myCanvas" width="500" height="500"
-					style="background:black;border:2px groove ButtonBorder;"></canvas>
-				<div id="player_here"
-					style="position: absolute; animation: rotate 1s infinite linear; pointer-events: none;">
-					<div
-						style="background: gold; width: 3px; height: 3px; position: absolute; left: calc(50% - 1.5px); top: 0%;">
-					</div>
+				<canvas id="myCanvas" width="500" height="500" style="background:black;border:2px groove ButtonBorder;"></canvas>
+				<div id="player_here" style="position: absolute; animation: rotate 1s infinite linear; pointer-events: none;">
+					<div style="background: gold; width: 3px; height: 3px; position: absolute; left: calc(50% - 1.5px); top: 0%;"></div>
 				</div>
-				<div id="player_travel"
-					style="background: gold; width: 3px; height: 3px; position: absolute; animation: player_travel 1s linear; display: none;">
-				</div>
-				<canvas id="navigate_star" width="500" height="500"
-					style="display: none; position: absolute; background: black; transition: all 0.5s;"></canvas>
-				<canvas id="navigate_ring"
-					style="display: none; position: absolute; transition: all 0.5s; pointer-events: none;"
-					ontransitionend="this.style.display = 'none'"></canvas>
+				<canvas id="navigate_star" width="500" height="500" style="display: none; position: absolute; background: black; transition: all 0.5s;" ontransitionend="this.style.display = 'none'"></canvas>
+				<canvas id="navigate_ring" style="display: none; position: absolute; transition: all 0.5s; pointer-events: none;" ontransitionend="this.style.display = 'none'"></canvas>
+				<div id="player_travel" style="background: gold; width: 3px; height: 3px; position: absolute; animation: player_travel 1.3s linear; display: none;" ontransitionend="this.style.display = 'none'"></div>
 			</div>
 			<div id="hints" style="height:5rem"></div>
 		</fieldset>
 		<div style="display: flex;flex-flow: column;">
 			<fieldset id="profile" style="display:none">
-				<legend>Logged in as (<a
-						href="javascript:document.getElementById('profile').style.display='none';pb.authStore.clear();onhashchange();void 0;">logout</a>)
-				</legend>
+				<legend>Logged in as (<a href="javascript:document.getElementById('profile').style.display='none';pb.authStore.clear();onhashchange();void 0;">logout</a>)</legend>
 				<details>
-					<summary id="profile_name" style="white-space: pre;width: 225px;overflow: clip;">
-					</summary>
-					<p style="text-align: center;">
-						To change your email or password,
-						to delete your account or request a copy of all your data,
-						please send me an email.
-						Provide the following code as a proof of account ownership:
-					</p>
+					<summary id="profile_name" style="white-space: pre;width: 225px;overflow: clip;"></summary>
+					<p style="text-align: center;">To change your email or password, to delete your account or request a copy of all your data, please send me an email. Provide the following code as a proof of account ownership:</p>
 					<pre style="text-align: center; font-weight: bold;" id="profile_id"></pre>
-					</p>
 				</details>
 			</fieldset>
 			<fieldset style="width:225px;overflow-y: auto; flex-grow: 1;">
 				<legend id="fpTitle_flyi">Travelling</legend>
-				<legend id="fpTitle_normal">Flight plan
-					(<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)
-				</legend>
+				<legend id="fpTitle_normal">Flight plan (<b id="fp_jobs_done"></b> of <b id="fp_jobs_total"></b> jobs done)</legend>
 				<div id="myFlightplan"></div>
-				<div id="fp_hint">&mldr;<br>
-					Click on a planet or portal to add it to the flight plan
-					<button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
+				<div id="fp_hint">&mldr;<br>Click on a planet or portal to add it to the flight plan. <button id="fp_undo" onclick="flightplan.undo();redraw()">remove last step</button>
 				</div>
 				<div id="fp_jump">
-					<div id="fp_jump_ok">
-						Leave to <b id="fp_jump_ok_star"></b>
-						(it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs)
-						<button onclick="jump()">Execute flight plan and continue to this star</button>
-					</div>
-					<div id="fp_jump_no">
-						Can't fly to this star: <span id="fp_jump_no_reason"></span>
+					<div id="fp_jump_ok"> Leave to <b id="fp_jump_ok_star"></b> (it&nbsp;has <b id="fp_jump_ok_jobs"></b> jobs) <button onclick="jump()">Execute flight plan and continue to this star</button></div>
+					<div id="fp_jump_no"> Can't fly to this star: <span id="fp_jump_no_reason"></span>
 					</div>
 				</div>
 				<div id="fp_flyi">
-					<div id="flyi_cargo_with" style="white-space: nowrap;">
-						Carrying cargo: <span id="flyi_cargo"></span>
+					<div id="flyi_cargo_with" style="white-space: nowrap;">Carrying cargo: <span id="flyi_cargo"></span>
 						<hr>
-					</div>
-					It takes 10 hours of real time to travel between stars.
-					Time left until arrival:
-					<div id="flyi_time" style="font-weight: bold; text-align: center;">00:00:00</div>
+					</div> It takes 10 hours of real time to travel between stars. Time left until arrival: <div id="flyi_time" style="font-weight: bold; text-align: center;">00:00:00</div>
 					<details>
 						<summary>Acknowledgements</summary>
-						<div style="text-align: center;">
-							Uses <a href="https://pocketbase.io/">PocketBase</a> for backend.
-							10h countdown clock font size is set by
-							<a href="https://textfit.strml.net/">textFit</a>
-							(<a href="https://github.com/STRML/textFit">github</a>).
-							Always Free hosting provided by <a
-								href="https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm">Oracle
-								Cloud</a>.
-						</div>
+						<div style="text-align: center;"> Uses <a href="https://pocketbase.io/">PocketBase</a> for backend. 10h countdown clock font size is set by <a href="https://textfit.strml.net/">textFit</a> (<a href="https://github.com/STRML/textFit">github</a>). Always Free hosting provided by <a href="https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm">Oracle Cloud</a>. </div>
 					</details>
 				</div>
 			</fieldset>
 		</div>
 	</div>
-
 	<dialog id="stats">
 		<div>Stars visited: <b id="stats_s"></b></div>
 		<div>Planets visited: <b id="stats_p"></b></div>
@@ -277,9 +175,6 @@
 		<hr>
 		<form method="dialog"><button>OK</button></form>
 	</dialog>
-
 	<script src="script.js"></script>
-
 </body>
-
 </html>
