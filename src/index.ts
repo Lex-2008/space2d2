@@ -30,7 +30,7 @@ var flyi_time: number;
 var flyi_finish: number;
 var flyi_interval: number;
 if (location.hostname == 'localhost') {
-    flyi_time = 1000 * 60 * 10; //10min
+    flyi_time = 1000 * 10; //10sec
 } else {
     flyi_time = 1000 * 60 * 60 * 10; //10h
 }
@@ -201,7 +201,7 @@ var simple_save_game = function () {
 
 var navigate_star: Star;
 
-export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
+export async function navigateTo(dest: Direction | Star, reverse?: boolean, fade?: boolean) {
     //if reverse is not set - dest is one of shown_star.neighbours
     //if reverse is true - dest is ignored and considered a shown_star
     // return new Promise((resolve, reject) => {
@@ -250,7 +250,7 @@ export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
         star.style.width = star.style.height = star_size + 'px';
         await sleep(10);//start animation
         // setTimeout(() => {
-        var pad = 150;
+        var pad = fade ? 110 : 150;
         var ani_time = 300;
         ring.style.left = ring.style.top = `-${pad}px`;
         ring.style.width = ring.style.height = `${2 * pad + 500}px`;
@@ -262,8 +262,8 @@ export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
         await sleep(ani_time + 10);
         // setTimeout(() => {
         // const ring = gebi('navigate_ring') as HTMLCanvasElement;
-        var pad = 300;
-        var ani_time = 50;
+        var pad = 500;
+        var ani_time = fade ? 5000 : 50;
         ring.style.transitionDuration = ani_time + 'ms';
         ring.style.left = ring.style.top = `-${pad}px`;
         ring.style.width = ring.style.height = `${2 * pad + 500}px`;
@@ -273,8 +273,12 @@ export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
         star.style.display = 'none';
         // }, 500);
         // setTimeout(resolve, 600);
-        await sleep(ani_time + 10);
-        ring.style.display = 'none';
+        if (fade) {
+            setTimeout(() => { ring.style.display = 'none'; }, ani_time + 10);
+        } else {
+            await sleep(ani_time + 10);
+            ring.style.display = 'none';
+        }
     } else {
         var pad = 150;
         var ani_time = 400;
@@ -299,7 +303,6 @@ export async function navigateTo(dest: Direction | Star, reverse?: boolean) {
         ring.style.display = 'none';
     }
 };
-
 
 async function jump() {
     if (shown_star == player_star) return;
@@ -332,9 +335,7 @@ async function jump() {
     await sleep(1310);
     gebi('player_travel').style.display = 'none';
 
-    await navigateTo(player_star);
-    // set_shown_star(player_star);
-    // redraw();
+    await navigateTo(player_star, false, mode == 'real' && stats.s > 1);
     if (mode != 'real') return;
     // for REAL mode
     if (stats.s == 1) {
