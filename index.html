@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>space2d2</title>
-	<link id="favicon" rel="icon" href="star.png">
+	<link id="favicon" rel="icon" href="star.svg">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		html {
@@ -119,7 +119,7 @@
 		<fieldset>
 			<legend id="mapTitle_flying" style="display: none;">You are currently travelling to this system (<a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)</legend>
 			<legend id="mapTitle_player">Current system (<a href="javascript:navigateTo(get_player_star().neighbours[Symbol.iterator]().next().value);void 0">explore neighbours</a> / <a href="javascript:document.getElementById('stats').showModal();void 0">show stats</a>)</legend>
-			<legend id="mapTitle_neighbour">Exploring neighbour <b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b> (<a href="javascript:navigateTo(get_player_star().neighbours.prev(get_shown_star()).target);redraw();void 0">&circlearrowright; prev</a> | <a href="javascript:navigateTo(get_player_star().neighbours.next(get_shown_star()).target);redraw();void 0">next &circlearrowleft;</a> | <a href="javascript:navigateTo(get_player_star(), true);void 0">return to current</a>)</legend>
+			<legend id="mapTitle_neighbour">Exploring neighbour <b id="mapTitle_neighbour_n"></b> of <b id="mapTitle_neighbour_total"></b> (<a href="javascript:navigateTo(get_player_star().neighbours.next(get_shown_star()).target);redraw();void 0">&circlearrowleft; next</a> | <a href="javascript:navigateTo(get_player_star().neighbours.prev(get_shown_star()).target);redraw();void 0">prev &circlearrowright;</a> | <a href="javascript:navigateTo(get_player_star(), true);void 0">return to current</a>)</legend>
 			<div style="position: relative; overflow: hidden; width: 504px;height: 504px;">
 				<canvas id="myCanvas" width="500" height="500" style="background:black;border:2px groove ButtonBorder;"></canvas>
 				<div id="player_here" style="position: absolute; animation: rotate 1s infinite linear; pointer-events: none;">
